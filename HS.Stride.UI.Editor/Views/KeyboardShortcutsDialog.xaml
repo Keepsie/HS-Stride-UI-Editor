@@ -1,0 +1,210 @@
+<Window x:Class="HS.Stride.UI.Editor.Views.KeyboardShortcutsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Keyboard Shortcuts"
+        Width="400"
+        Height="500"
+        WindowStartupLocation="CenterOwner"
+        Background="#1A1A1A"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <Style x:Key="CategoryHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#0A84FF"/>
+            <Setter Property="Margin" Value="0,16,0,8"/>
+        </Style>
+        <Style x:Key="ShortcutRow" TargetType="Grid">
+            <Setter Property="Margin" Value="0,4,0,4"/>
+        </Style>
+        <Style x:Key="KeyText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="DescText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#9A9A9A"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="Keyboard Shortcuts"
+                   FontSize="20"
+                   FontWeight="SemiBold"
+                   Foreground="#E0E0E0"
+                   Margin="0,0,0,8"/>
+
+        <!-- Shortcuts List -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+
+                <!-- File -->
+                <TextBlock Text="File" Style="{StaticResource CategoryHeader}"/>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Ctrl + S" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Save" Style="{StaticResource DescText}"/>
+                </Grid>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Ctrl + Shift + S" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Save As" Style="{StaticResource DescText}"/>
+                </Grid>
+
+                <!-- Edit -->
+                <TextBlock Text="Edit" Style="{StaticResource CategoryHeader}"/>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Ctrl + Z" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Undo" Style="{StaticResource DescText}"/>
+                </Grid>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Ctrl + Y" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Redo" Style="{StaticResource DescText}"/>
+                </Grid>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Ctrl + C" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Copy" Style="{StaticResource DescText}"/>
+                </Grid>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Ctrl + X" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Cut" Style="{StaticResource DescText}"/>
+                </Grid>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Ctrl + V" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Paste" Style="{StaticResource DescText}"/>
+                </Grid>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Ctrl + D" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Duplicate" Style="{StaticResource DescText}"/>
+                </Grid>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Delete" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Delete selection" Style="{StaticResource DescText}"/>
+                </Grid>
+
+                <!-- Movement -->
+                <TextBlock Text="Movement" Style="{StaticResource CategoryHeader}"/>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Arrow Keys" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Move 1px" Style="{StaticResource DescText}"/>
+                </Grid>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Shift + Arrows" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Move 10px" Style="{StaticResource DescText}"/>
+                </Grid>
+
+                <!-- Selection -->
+                <TextBlock Text="Selection" Style="{StaticResource CategoryHeader}"/>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Ctrl + Click" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Multi-select" Style="{StaticResource DescText}"/>
+                </Grid>
+
+                <!-- Canvas Navigation -->
+                <TextBlock Text="Canvas Navigation" Style="{StaticResource CategoryHeader}"/>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Middle Mouse" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Pan canvas" Style="{StaticResource DescText}"/>
+                </Grid>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Space + Drag" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Pan canvas" Style="{StaticResource DescText}"/>
+                </Grid>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Alt + Middle Mouse" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Pan (for zoom combo)" Style="{StaticResource DescText}"/>
+                </Grid>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Alt + Mouse Wheel" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Zoom in/out" Style="{StaticResource DescText}"/>
+                </Grid>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Close Button -->
+        <Button Grid.Row="2"
+                Content="Close"
+                HorizontalAlignment="Right"
+                Padding="16,8"
+                Margin="0,16,0,0"
+                Background="#0A84FF"
+                Foreground="White"
+                BorderThickness="0"
+                Click="CloseButton_Click"/>
+    </Grid>
+</Window>

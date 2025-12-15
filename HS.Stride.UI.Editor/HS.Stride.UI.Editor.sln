@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36518.9
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS.Stride.UI.Editor", "HS.Stride.UI.Editor.csproj", "{CD44A765-00A3-41E9-A4CA-1DDBDA441CDA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CD44A765-00A3-41E9-A4CA-1DDBDA441CDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD44A765-00A3-41E9-A4CA-1DDBDA441CDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD44A765-00A3-41E9-A4CA-1DDBDA441CDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD44A765-00A3-41E9-A4CA-1DDBDA441CDA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AB0B29CF-FA85-4A81-9CA8-3E4CDFD3651F}
+	EndGlobalSection
+EndGlobal

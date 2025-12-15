@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>logo.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <Copyright>Happenstance Games LLC</Copyright>
+    <PackageIcon>hs_ui_editor.png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="logo.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HS.Stride.Editor.Toolkit" Version="1.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="hs_ui_editor.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="hs_ui_editor.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="libs\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="HS.Stride.Mass.Importer.Core">
+      <HintPath>libs\HS.Stride.Mass.Importer.Core_1.1.0.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

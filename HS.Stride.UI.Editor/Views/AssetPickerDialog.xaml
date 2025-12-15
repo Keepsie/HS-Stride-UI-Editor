@@ -1,0 +1,199 @@
+<Window x:Class="HS.Stride.UI.Editor.Views.AssetPickerDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:HS.Stride.UI.Editor.Views"
+        Title="Select Asset"
+        Height="600"
+        Width="700"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Style="{StaticResource ModernWindow}">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/ModernTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Null to Visibility converters -->
+            <local:NullToVisibilityConverter x:Key="NullToCollapsedConverter" NullValue="Collapsed" NotNullValue="Visible"/>
+            <local:NullToVisibilityConverter x:Key="NullToVisibleConverter" NullValue="Visible" NotNullValue="Collapsed"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Border Background="{StaticResource MediumBackgroundBrush}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource DarkBackgroundBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,0,0,1"
+                    Padding="24,20">
+                <StackPanel>
+                    <TextBlock Text="Select Asset"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               Margin="0,0,0,4"/>
+                    <TextBlock Text="Choose from project assets"
+                               FontSize="12"
+                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Search Box -->
+            <Border Grid.Row="1"
+                    Background="{StaticResource MediumBackgroundBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,0,0,1"
+                    Padding="24,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="SearchBox"
+                             Grid.Column="0"
+                             Style="{StaticResource ModernTextBox}"
+                             Text="Search assets..."
+                             Foreground="{StaticResource TextSecondaryBrush}"
+                             GotFocus="SearchBox_GotFocus"
+                             LostFocus="SearchBox_LostFocus"
+                             TextChanged="SearchBox_TextChanged"
+                             Margin="0,0,12,0"/>
+
+                    <Button Grid.Column="1"
+                            Content="🔍"
+                            Style="{StaticResource ModernButton}"
+                            Padding="12,8"
+                            FontSize="14"/>
+                </Grid>
+            </Border>
+
+            <!-- Asset Grid -->
+            <ScrollViewer Grid.Row="2"
+                          VerticalScrollBarVisibility="Auto"
+                          Padding="24,16">
+                <ListView x:Name="AssetListView"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          MouseDoubleClick="AssetListView_MouseDoubleClick"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Padding" Value="12"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListViewItem">
+                                        <Border x:Name="Border"
+                                                Background="{TemplateBinding Background}"
+                                                CornerRadius="8"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Border" Property="Background" Value="{StaticResource HoverBrush}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Border" Property="Background" Value="{StaticResource BorderBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Width="100">
+                                <Border Width="80"
+                                        Height="80"
+                                        Background="{StaticResource InputBackgroundBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,8">
+                                    <Grid>
+                                        <!-- Show thumbnail image if available -->
+                                        <Image Source="{Binding Thumbnail}"
+                                               Stretch="Uniform"
+                                               Margin="4"
+                                               Visibility="{Binding Thumbnail, Converter={StaticResource NullToCollapsedConverter}}"/>
+                                        <!-- Fallback to icon if no thumbnail -->
+                                        <TextBlock Text="{Binding Icon}"
+                                                   FontSize="36"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   Visibility="{Binding Thumbnail, Converter={StaticResource NullToVisibleConverter}}"/>
+                                    </Grid>
+                                </Border>
+                                <TextBlock Text="{Binding Name}"
+                                           TextTrimming="CharacterEllipsis"
+                                           TextAlignment="Center"
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           Margin="0,0,0,4"
+                                           ToolTip="{Binding Name}"/>
+                                <TextBlock Text="{Binding Type}"
+                                           TextAlignment="Center"
+                                           FontSize="10"
+                                           Foreground="{StaticResource TextSecondaryBrush}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </ScrollViewer>
+
+            <!-- Buttons -->
+            <Border Grid.Row="3"
+                    Background="{StaticResource DarkBackgroundBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,1,0,0"
+                    Padding="24,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="1"
+                            Content="OK"
+                            Style="{StaticResource PrimaryButton}"
+                            Width="100"
+                            Margin="0,0,8,0"
+                            Click="OkButton_Click"
+                            IsDefault="True"/>
+
+                    <Button Grid.Column="2"
+                            Content="Cancel"
+                            Style="{StaticResource ModernButton}"
+                            Background="{StaticResource InputBackgroundBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            Padding="16,10"
+                            Width="100"
+                            Click="CancelButton_Click"
+                            IsCancel="True"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
