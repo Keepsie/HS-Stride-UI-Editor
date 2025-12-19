@@ -1337,8 +1337,12 @@ namespace HS.Stride.UI.Editor
                 }
                 else
                 {
-                    MessageBox.Show("No texture or sprite assets found in project.",
-                        "No Assets", MessageBoxButton.OK, MessageBoxImage.Information);
+                    // Show empty state with "no assets" message
+                    EmptyStatePanel.Visibility = Visibility.Visible;
+                    ProjectContentListView.Visibility = Visibility.Collapsed;
+                    EmptyStateIcon.Text = "🖼️";
+                    EmptyStateTitle.Text = "No assets found";
+                    EmptyStateSubtitle.Text = "Import textures or sprites to see them here";
                 }
             }
             catch (Exception ex)
