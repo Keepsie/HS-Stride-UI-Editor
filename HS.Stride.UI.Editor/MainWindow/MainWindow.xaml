@@ -156,24 +156,23 @@
                         IsEnabled="False"/>
 
                 <!-- Page Name Indicator -->
-                <Border Background="{StaticResource InputBackgroundBrush}"
-                        BorderBrush="{StaticResource BorderBrush}"
-                        BorderThickness="1"
-                        CornerRadius="4"
-                        Padding="12,4">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock x:Name="PageNameIndicator"
-                                   Text="No page loaded"
-                                   FontSize="12"
-                                   Foreground="{StaticResource TextSecondaryBrush}"/>
-                        <TextBlock x:Name="SaveStatusIndicator"
-                                   Text=""
-                                   FontSize="12"
-                                   FontWeight="SemiBold"
-                                   Foreground="#FF22C55E"
-                                   Margin="8,0,0,0"/>
-                    </StackPanel>
-                </Border>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
+                    <TextBlock Text="Page:"
+                               FontSize="12"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="0,0,6,0"/>
+                    <TextBlock x:Name="PageNameIndicator"
+                               Text="No page loaded"
+                               FontSize="12"
+                               FontStyle="Italic"
+                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                    <TextBlock x:Name="SaveStatusIndicator"
+                               Text=""
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="#FF22C55E"
+                               Margin="8,0,0,0"/>
+                </StackPanel>
             </StackPanel>
         </Grid>
 
