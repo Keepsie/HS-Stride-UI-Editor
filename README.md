@@ -55,6 +55,16 @@ dotnet run --project HS.Stride.UI.Editor.csproj
 5. **Edit properties** in the right panel
 6. **File → Save** - Outputs standard Stride format
 
+### Importing Textures
+
+For best results, use **File → Import Textures** in the editor to add new images to your project.
+
+If you import textures directly in Stride GameStudio:
+1. Make sure Stride has **saved the asset** (no asterisk in title bar)
+2. Close and reopen this editor to see new assets, OR use the **Refresh button** (🔄) in the Content Browser
+
+> The refresh button should work in most cases, but closing/reopening is the guaranteed approach if you encounter issues.
+
 ## 🎨 Features
 
 ### Canvas Workflow
