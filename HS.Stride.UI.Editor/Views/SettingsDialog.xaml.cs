@@ -12,6 +12,8 @@ namespace HS.Stride.UI.Editor.Views
     /// </summary>
     public partial class SettingsDialog : Window
     {
+        public double DesignWidth { get; set; } = 1280;
+        public double DesignHeight { get; set; } = 720;
         public bool ShowGrid { get; set; } = true;
         public Color GuideColor { get; set; } = Color.FromRgb(0, 150, 255);
         public double GuideThickness { get; set; } = 1;
@@ -28,6 +30,8 @@ namespace HS.Stride.UI.Editor.Views
 
         private void LoadCurrentSettings()
         {
+            DesignWidthTextBox.Text = DesignWidth.ToString();
+            DesignHeightTextBox.Text = DesignHeight.ToString();
             ShowGridCheckBox.IsChecked = ShowGrid;
             GuideColorPreview.Background = new SolidColorBrush(GuideColor);
             GuideThicknessTextBox.Text = GuideThickness.ToString();
@@ -96,6 +100,17 @@ namespace HS.Stride.UI.Editor.Views
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
+            // Parse design resolution
+            if (double.TryParse(DesignWidthTextBox.Text, out double designWidth))
+            {
+                DesignWidth = Math.Max(100, Math.Min(7680, designWidth)); // Min 100, max 8K
+            }
+
+            if (double.TryParse(DesignHeightTextBox.Text, out double designHeight))
+            {
+                DesignHeight = Math.Max(100, Math.Min(4320, designHeight)); // Min 100, max 8K
+            }
+
             // Get checkbox value
             ShowGrid = ShowGridCheckBox.IsChecked ?? true;
 

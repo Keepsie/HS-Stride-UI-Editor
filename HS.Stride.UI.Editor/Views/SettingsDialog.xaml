@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Editor Settings"
         Width="400"
-        Height="420"
+        Height="480"
         WindowStartupLocation="CenterOwner"
         Background="#1A1A1A"
         ResizeMode="NoResize">
@@ -37,6 +37,27 @@
 
         <!-- Settings Content -->
         <StackPanel Grid.Row="1">
+            <!-- Page Resolution -->
+            <TextBlock Text="Page Resolution" FontWeight="SemiBold" Margin="0,0,0,10"/>
+            <Grid Margin="0,0,0,15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Size:"/>
+                <TextBox Grid.Column="1"
+                         x:Name="DesignWidthTextBox"
+                         Text="1280"
+                         HorizontalAlignment="Stretch"/>
+                <TextBlock Grid.Column="2" Text=" × " HorizontalAlignment="Center"/>
+                <TextBox Grid.Column="3"
+                         x:Name="DesignHeightTextBox"
+                         Text="720"
+                         HorizontalAlignment="Stretch"/>
+            </Grid>
+
             <!-- Grid -->
             <TextBlock Text="Grid" FontWeight="SemiBold" Margin="0,0,0,10"/>
             <CheckBox x:Name="ShowGridCheckBox"

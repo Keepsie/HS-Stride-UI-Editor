@@ -331,6 +331,8 @@ namespace HS.Stride.UI.Editor
             dialog.Owner = this;
 
             // Load current settings
+            dialog.DesignWidth = _designWidth;
+            dialog.DesignHeight = _designHeight;
             dialog.ShowGrid = _showGrid;
             dialog.GuideColor = _guideColor;
             dialog.GuideThickness = _guideThickness;
@@ -341,6 +343,9 @@ namespace HS.Stride.UI.Editor
             if (dialog.ShowDialog() == true)
             {
                 // Apply new settings
+                bool resolutionChanged = _designWidth != dialog.DesignWidth || _designHeight != dialog.DesignHeight;
+                _designWidth = dialog.DesignWidth;
+                _designHeight = dialog.DesignHeight;
                 _showGrid = dialog.ShowGrid;
                 _guideColor = dialog.GuideColor;
                 _guideThickness = dialog.GuideThickness;
@@ -349,6 +354,11 @@ namespace HS.Stride.UI.Editor
                 _highlightColor = dialog.HighlightColor;
 
                 // Update visuals
+                if (resolutionChanged)
+                {
+                    UpdateCanvasSize();
+                    MarkDocumentAsChanged();
+                }
                 UpdateGridVisibility();
                 UpdateGuideColors();
                 UpdateSelectionColors();
@@ -414,7 +424,8 @@ namespace HS.Stride.UI.Editor
             // Update spacing guide overlay dimensions
             SpacingGuideOverlay?.SetArtboardSize(_designWidth, _designHeight);
 
-            // Canvas and artboard positioning handled by CenterArtboard
+            // Recalculate canvas size and reposition artboard
+            CenterArtboard();
             UpdateScrollbarVisibility();
         }
 
