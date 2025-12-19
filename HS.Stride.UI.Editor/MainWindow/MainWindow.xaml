@@ -132,7 +132,10 @@
                     </MenuItem>
                 </MenuItem>
                 <MenuItem Header="_Help">
+                    <MenuItem Header="_Quick Start" Click="MenuQuickStart_Click"/>
                     <MenuItem Header="_Keyboard Shortcuts" Click="MenuKeyboardShortcuts_Click"/>
+                    <Separator/>
+                    <MenuItem Header="_Documentation (GitHub)" Click="MenuDocumentation_Click"/>
                     <Separator/>
                     <MenuItem Header="_About" Click="MenuAbout_Click"/>
                 </MenuItem>

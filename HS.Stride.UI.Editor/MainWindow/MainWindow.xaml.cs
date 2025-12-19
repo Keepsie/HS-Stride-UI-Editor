@@ -1294,6 +1294,51 @@ namespace HS.Stride.UI.Editor
             dialog.ShowDialog();
         }
 
+        private void MenuQuickStart_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show(
+                "QUICK START GUIDE\n\n" +
+                "1. CONNECT TO PROJECT\n" +
+                "   File → Connect to Project → Select your Stride .sln file\n\n" +
+                "2. CREATE OR LOAD A PAGE\n" +
+                "   • File → New UI Page (creates blank page)\n" +
+                "   • File → Open (load existing .sduipage)\n\n" +
+                "3. BUILD YOUR UI\n" +
+                "   • Drag elements from UI Components panel\n" +
+                "   • Drag textures from Content Browser\n" +
+                "   • Edit properties in the right panel\n\n" +
+                "4. SAVE YOUR WORK\n" +
+                "   File → Save (or Ctrl+S)\n\n" +
+                "IMPORTANT NOTES:\n" +
+                "• Close and reopen Stride GameStudio to see changes\n" +
+                "• Works with pages built in Stride\n" +
+                "• Pages using Grid layout builders may have issues\n" +
+                "• Use the Refresh button in Content Browser after importing assets",
+                "Quick Start",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
+        private void MenuDocumentation_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "https://github.com/Keepsie/HS-Stride-UI-Editor#readme",
+                    UseShellExecute = true
+                });
+            }
+            catch
+            {
+                MessageBox.Show(
+                    "Could not open browser.\n\nVisit: https://github.com/Keepsie/HS-Stride-UI-Editor",
+                    "Documentation",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+        }
+
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
         {
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;

@@ -13,6 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="libs\HS.Stride.Mass.Importer.Core_1.1.0.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="logo.ico">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
@@ -20,6 +24,12 @@
 
   <ItemGroup>
     <PackageReference Include="HS.Stride.Editor.Toolkit" Version="1.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="HS.Stride.Mass.Importer.Core">
+      <HintPath>libs\HS.Stride.Mass.Importer.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -33,16 +43,6 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="libs\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="HS.Stride.Mass.Importer.Core">
-      <HintPath>libs\HS.Stride.Mass.Importer.Core_1.1.0.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>
