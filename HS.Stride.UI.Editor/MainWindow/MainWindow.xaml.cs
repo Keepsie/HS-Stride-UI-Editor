@@ -1170,6 +1170,15 @@ namespace HS.Stride.UI.Editor
             SaveContentBrowserState();
         }
 
+        private void RefreshAssetsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_assetService.IsProjectConnected) return;
+
+            // Reconnect to project to force toolkit to rescan assets
+            _assetService.RefreshProject();
+            PopulateProjectContent(forceRefresh: true);
+        }
+
         private void SaveContentBrowserState()
         {
             if (string.IsNullOrEmpty(_connectedProjectSlnPath)) return;
@@ -1316,14 +1325,14 @@ namespace HS.Stride.UI.Editor
 
         #region Toolkit Integration - Project Content
 
-        private void PopulateProjectContent()
+        private void PopulateProjectContent(bool forceRefresh = false)
         {
             if (!_assetService.IsProjectConnected) return;
 
             try
             {
                 // Get assets from service
-                var assets = _assetService.GetProjectAssets();
+                var assets = _assetService.GetProjectAssets(forceRefresh);
 
                 // Store full list for search filtering
                 _allProjectAssets = assets.ToList();

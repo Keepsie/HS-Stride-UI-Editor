@@ -858,8 +858,17 @@
                                             ToolTip="Clear folder filter"
                                             Click="ClearFolderFilterButton_Click"
                                             Visibility="Collapsed"
-                                            Margin="0,0,8,0">
+                                            Margin="0,0,4,0">
                                         <TextBlock Text="✕" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    </Button>
+                                    <!-- Refresh assets -->
+                                    <Button x:Name="RefreshAssetsButton"
+                                            Style="{StaticResource ModernButton}"
+                                            Padding="6,4"
+                                            ToolTip="Refresh assets"
+                                            Click="RefreshAssetsButton_Click"
+                                            Margin="0,0,8,0">
+                                        <TextBlock Text="🔄" FontSize="12"/>
                                     </Button>
                                     <TextBox x:Name="AssetSearchBox"
                                              Width="200"
