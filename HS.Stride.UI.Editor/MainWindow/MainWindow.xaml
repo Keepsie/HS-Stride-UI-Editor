@@ -598,7 +598,7 @@
                                 <Border Width="1" Height="20" Background="{StaticResource BorderBrush}" Margin="0,0,12,0"/>
 
                                 <!-- Alignment Tools -->
-                                <TextBlock Text="Align:"
+                                    <TextBlock Text="Multi-Element Align:"
                                            FontSize="12"
                                            Foreground="{StaticResource TextSecondaryBrush}"
                                            VerticalAlignment="Center"

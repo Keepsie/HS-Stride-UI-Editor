@@ -316,6 +316,9 @@ namespace HS.Stride.UI.Editor
             // Track document changes for unsaved changes warning
             _undoRedoManager.DocumentChanged += (s, e) => MarkDocumentAsChanged();
 
+            // Initialize alignment button states (disabled until 2+ elements selected)
+            UpdateAlignmentButtonStates();
+
             // Handle window closing to warn about unsaved changes
             Closing += MainWindow_Closing;
         }
