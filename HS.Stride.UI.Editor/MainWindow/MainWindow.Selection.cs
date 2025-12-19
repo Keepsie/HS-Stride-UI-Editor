@@ -67,6 +67,7 @@ namespace HS.Stride.UI.Editor
                 if (_selectedElements.Contains(parent))
                 {
                     // Parent is selected, so this element is NOT a root selection
+                    UpdateAlignmentButtonStates();
                     return;
                 }
                 parent = parent.Parent;
@@ -77,6 +78,7 @@ namespace HS.Stride.UI.Editor
 
             // Remove any descendants from root selection (they now have a selected ancestor)
             RemoveDescendantsFromRootSelection(element);
+            UpdateAlignmentButtonStates();
         }
 
         /// <summary>
@@ -95,6 +97,7 @@ namespace HS.Stride.UI.Editor
             {
                 PromoteDescendantsToRootIfSelected(child);
             }
+            UpdateAlignmentButtonStates();
         }
 
         /// <summary>
@@ -202,6 +205,7 @@ namespace HS.Stride.UI.Editor
             }
             _selectedElements.Clear();
             _selectedRootElements.Clear();
+            UpdateAlignmentButtonStates();
 
             // Clear TreeView selection
             _isUpdatingTreeViewSelection = true;
@@ -263,6 +267,28 @@ namespace HS.Stride.UI.Editor
         /// Get the primary selected element (first in list)
         /// </summary>
         private UIElementViewModel? PrimarySelection => _selectedElements.Count > 0 ? _selectedElements[0] : null;
+
+        /// <summary>
+        /// Update alignment/distribute button enabled states based on selection count
+        /// </summary>
+        private void UpdateAlignmentButtonStates()
+        {
+            var count = _selectedElements.Count;
+
+            // Alignment requires 2+ elements
+            var alignEnabled = count >= 2;
+            AlignLeftButton.IsEnabled = alignEnabled;
+            AlignCenterHButton.IsEnabled = alignEnabled;
+            AlignRightButton.IsEnabled = alignEnabled;
+            AlignTopButton.IsEnabled = alignEnabled;
+            AlignCenterVButton.IsEnabled = alignEnabled;
+            AlignBottomButton.IsEnabled = alignEnabled;
+
+            // Distribute requires 3+ elements
+            var distributeEnabled = count >= 3;
+            DistributeHButton.IsEnabled = distributeEnabled;
+            DistributeVButton.IsEnabled = distributeEnabled;
+        }
 
     }
 }

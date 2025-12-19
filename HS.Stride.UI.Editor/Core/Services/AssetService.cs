@@ -48,6 +48,19 @@ namespace HS.Stride.UI.Editor.Core.Services
         }
 
         /// <summary>
+        /// Refresh the project by reconnecting (forces toolkit to rescan assets)
+        /// </summary>
+        public void RefreshProject()
+        {
+            if (_connectedProject == null) return;
+
+            var projectPath = _connectedProject.ProjectPath;
+            _connectedProject = new StrideProject(projectPath);
+            _cachedAssets = null;
+            _cachedFonts = null;
+        }
+
+        /// <summary>
         /// Get the connected project (for advanced operations)
         /// </summary>
         public StrideProject? GetConnectedProject()

@@ -103,21 +103,24 @@ This editor uses a canvas-based workflow - think of canvas elements like divs/co
 
 ## ⌨️ Keyboard Shortcuts
 
-| Shortcut         | Action                           |
-| ---------------- | -------------------------------- |
-| Ctrl+S           | Save                             |
-| Ctrl+Shift+S     | Save As                          |
-| Ctrl+Z           | Undo                             |
-| Ctrl+Y           | Redo                             |
-| Ctrl+D           | Duplicate selection              |
-| Ctrl+C/X/V       | Copy/Cut/Paste                   |
-| Delete           | Delete selection                 |
-| Arrow keys       | Move 1px                         |
-| Shift+Arrows     | Move 10px                        |
-| Ctrl+Click       | Multi-select                     |
-| Middle Mouse     | Pan canvas                       |
-| Alt+Middle Mouse | Pan canvas (hold for zoom combo) |
-| Alt+Mouse Wheel  | Zoom in/out                      |
+| Shortcut              | Action                           |
+| --------------------- | -------------------------------- |
+| Ctrl+S                | Save                             |
+| Ctrl+Shift+S          | Save As                          |
+| Ctrl+Z                | Undo                             |
+| Ctrl+Y                | Redo                             |
+| Ctrl+D                | Duplicate selection              |
+| Ctrl+C/X/V            | Copy/Cut/Paste                   |
+| Delete                | Delete selection                 |
+| Arrow keys            | Move 1px                         |
+| Shift+Arrows          | Move 10px                        |
+| Ctrl+Click            | Multi-select                     |
+| Middle Mouse          | Pan canvas                       |
+| Space+Drag            | Pan canvas (Photoshop style)     |
+| Ctrl/Alt+Scroll       | Zoom in/out                      |
+| Shift+Scroll          | Horizontal scroll                |
+| Shift+Drag (resize)   | Maintain aspect ratio            |
+| Alt+Drag (resize)     | Scale from center                |
 
 ## 🛠️ Development
 

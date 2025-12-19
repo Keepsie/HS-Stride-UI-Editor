@@ -316,6 +316,9 @@ namespace HS.Stride.UI.Editor
             // Track document changes for unsaved changes warning
             _undoRedoManager.DocumentChanged += (s, e) => MarkDocumentAsChanged();
 
+            // Initialize alignment button states (disabled until 2+ elements selected)
+            UpdateAlignmentButtonStates();
+
             // Handle window closing to warn about unsaved changes
             Closing += MainWindow_Closing;
         }
@@ -331,6 +334,8 @@ namespace HS.Stride.UI.Editor
             dialog.Owner = this;
 
             // Load current settings
+            dialog.DesignWidth = _designWidth;
+            dialog.DesignHeight = _designHeight;
             dialog.ShowGrid = _showGrid;
             dialog.GuideColor = _guideColor;
             dialog.GuideThickness = _guideThickness;
@@ -341,6 +346,9 @@ namespace HS.Stride.UI.Editor
             if (dialog.ShowDialog() == true)
             {
                 // Apply new settings
+                bool resolutionChanged = _designWidth != dialog.DesignWidth || _designHeight != dialog.DesignHeight;
+                _designWidth = dialog.DesignWidth;
+                _designHeight = dialog.DesignHeight;
                 _showGrid = dialog.ShowGrid;
                 _guideColor = dialog.GuideColor;
                 _guideThickness = dialog.GuideThickness;
@@ -349,6 +357,11 @@ namespace HS.Stride.UI.Editor
                 _highlightColor = dialog.HighlightColor;
 
                 // Update visuals
+                if (resolutionChanged)
+                {
+                    UpdateCanvasSize();
+                    MarkDocumentAsChanged();
+                }
                 UpdateGridVisibility();
                 UpdateGuideColors();
                 UpdateSelectionColors();
@@ -414,7 +427,8 @@ namespace HS.Stride.UI.Editor
             // Update spacing guide overlay dimensions
             SpacingGuideOverlay?.SetArtboardSize(_designWidth, _designHeight);
 
-            // Canvas and artboard positioning handled by CenterArtboard
+            // Recalculate canvas size and reposition artboard
+            CenterArtboard();
             UpdateScrollbarVisibility();
         }
 
@@ -562,6 +576,13 @@ namespace HS.Stride.UI.Editor
             if (Keyboard.Modifiers == ModifierKeys.Control || Keyboard.Modifiers == ModifierKeys.Alt)
             {
                 Zoom(e.Delta > 0 ? ZoomStep : -ZoomStep);
+                e.Handled = true;
+            }
+            // Horizontal scroll with Shift+Wheel
+            else if (Keyboard.Modifiers == ModifierKeys.Shift)
+            {
+                var newOffset = CanvasScrollViewer.HorizontalOffset - e.Delta;
+                CanvasScrollViewer.ScrollToHorizontalOffset(newOffset);
                 e.Handled = true;
             }
         }
@@ -1152,6 +1173,15 @@ namespace HS.Stride.UI.Editor
             SaveContentBrowserState();
         }
 
+        private void RefreshAssetsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_assetService.IsProjectConnected) return;
+
+            // Reconnect to project to force toolkit to rescan assets
+            _assetService.RefreshProject();
+            PopulateProjectContent(forceRefresh: true);
+        }
+
         private void SaveContentBrowserState()
         {
             if (string.IsNullOrEmpty(_connectedProjectSlnPath)) return;
@@ -1267,6 +1297,51 @@ namespace HS.Stride.UI.Editor
             dialog.ShowDialog();
         }
 
+        private void MenuQuickStart_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show(
+                "QUICK START GUIDE\n\n" +
+                "1. CONNECT TO PROJECT\n" +
+                "   File → Connect to Project → Select your Stride .sln file\n\n" +
+                "2. CREATE OR LOAD A PAGE\n" +
+                "   • File → New UI Page (creates blank page)\n" +
+                "   • File → Open (load existing .sduipage)\n\n" +
+                "3. BUILD YOUR UI\n" +
+                "   • Drag elements from UI Components panel\n" +
+                "   • Drag textures from Content Browser\n" +
+                "   • Edit properties in the right panel\n\n" +
+                "4. SAVE YOUR WORK\n" +
+                "   File → Save (or Ctrl+S)\n\n" +
+                "IMPORTANT NOTES:\n" +
+                "• Close and reopen Stride GameStudio to see changes\n" +
+                "• Works with pages built in Stride\n" +
+                "• Pages using Grid layout builders may have issues\n" +
+                "• Use the Refresh button in Content Browser after importing assets",
+                "Quick Start",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
+        private void MenuDocumentation_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "https://github.com/Keepsie/HS-Stride-UI-Editor#readme",
+                    UseShellExecute = true
+                });
+            }
+            catch
+            {
+                MessageBox.Show(
+                    "Could not open browser.\n\nVisit: https://github.com/Keepsie/HS-Stride-UI-Editor",
+                    "Documentation",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+        }
+
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
         {
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
@@ -1276,6 +1351,16 @@ namespace HS.Stride.UI.Editor
                 $"HS Stride UI Editor\n" +
                 $"Version {versionString}\n\n" +
                 "A standalone visual UI editor for the Stride game engine.\n\n" +
+                "CONTROLS:\n" +
+                "Ctrl/Alt + Scroll: Zoom in/out\n" +
+                "Shift + Scroll: Horizontal scroll\n" +
+                "Middle Mouse / Space + Drag: Pan canvas\n" +
+                "Shift + Drag: Maintain aspect ratio\n" +
+                "Alt + Drag: Scale from center\n" +
+                "Ctrl + Click: Multi-select\n" +
+                "Delete: Delete selected\n" +
+                "Ctrl+D: Duplicate selected\n" +
+                "Ctrl+Z/Y: Undo/Redo\n\n" +
                 "© 2025 Happenstance Games LLC\n" +
                 "Licensed under the MIT License\n\n" +
                 "Contact: Dave@happenstancegames.com",
@@ -1288,14 +1373,14 @@ namespace HS.Stride.UI.Editor
 
         #region Toolkit Integration - Project Content
 
-        private void PopulateProjectContent()
+        private void PopulateProjectContent(bool forceRefresh = false)
         {
             if (!_assetService.IsProjectConnected) return;
 
             try
             {
                 // Get assets from service
-                var assets = _assetService.GetProjectAssets();
+                var assets = _assetService.GetProjectAssets(forceRefresh);
 
                 // Store full list for search filtering
                 _allProjectAssets = assets.ToList();
@@ -1309,8 +1394,12 @@ namespace HS.Stride.UI.Editor
                 }
                 else
                 {
-                    MessageBox.Show("No texture or sprite assets found in project.",
-                        "No Assets", MessageBoxButton.OK, MessageBoxImage.Information);
+                    // Show empty state with "no assets" message
+                    EmptyStatePanel.Visibility = Visibility.Visible;
+                    ProjectContentListView.Visibility = Visibility.Collapsed;
+                    EmptyStateIcon.Text = "🖼️";
+                    EmptyStateTitle.Text = "No assets found";
+                    EmptyStateSubtitle.Text = "Import textures or sprites to see them here";
                 }
             }
             catch (Exception ex)
