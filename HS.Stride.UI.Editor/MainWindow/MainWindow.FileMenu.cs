@@ -36,6 +36,9 @@ namespace HS.Stride.UI.Editor
         {
             try
             {
+                // Check for unsaved changes BEFORE connecting to new project
+                if (!CheckUnsavedChangesAndPrompt()) return;
+
                 // Get project folder from .sln file
                 var projectFolder = Path.GetDirectoryName(slnFilePath);
                 if (string.IsNullOrEmpty(projectFolder))
@@ -43,6 +46,11 @@ namespace HS.Stride.UI.Editor
                     MessageBox.Show("Invalid project path.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
+
+                // Reset editor state for new project
+                _designWidth = 1280;
+                _designHeight = 720;
+                _fileService.HasUnsavedChanges = false;
 
                 StrideProject? project = null;
 
@@ -75,8 +83,8 @@ namespace HS.Stride.UI.Editor
                 PopulateProjectContent();
                 RestoreContentBrowserState();
 
-                // Auto-create a new page to save time
-                MenuNewUIPage_Click(null, null!);
+                // Auto-create a new page to save time (no unsaved check needed - we did it above)
+                CreateNewPageInternal();
 
                 // Add to recent projects and update menus
                 var projectData = _editorDataService.GetOrCreateProjectData(slnFilePath);
@@ -97,6 +105,17 @@ namespace HS.Stride.UI.Editor
 
             // Check for unsaved changes before creating new document
             if (!CheckUnsavedChangesAndPrompt()) return;
+
+            CreateNewPageInternal();
+        }
+
+        /// <summary>
+        /// Creates a new page without checking for unsaved changes.
+        /// Use this when unsaved check was already done (e.g., ConnectToProjectAsync).
+        /// </summary>
+        private void CreateNewPageInternal()
+        {
+            if (_connectedProject == null) return;
 
             try
             {
@@ -123,6 +142,7 @@ namespace HS.Stride.UI.Editor
 
                 // Clear canvas and re-render
                 RenderAllElements();
+                UpdateCanvasSize();
 
                 // Document is now loaded - allow editing
                 _isDocumentLoaded = true;
