@@ -575,6 +575,13 @@ namespace HS.Stride.UI.Editor
                 Zoom(e.Delta > 0 ? ZoomStep : -ZoomStep);
                 e.Handled = true;
             }
+            // Horizontal scroll with Shift+Wheel
+            else if (Keyboard.Modifiers == ModifierKeys.Shift)
+            {
+                var newOffset = CanvasScrollViewer.HorizontalOffset - e.Delta;
+                CanvasScrollViewer.ScrollToHorizontalOffset(newOffset);
+                e.Handled = true;
+            }
         }
 
         // Keyboard input handlers moved to MainWindow.Input.cs
@@ -1287,6 +1294,16 @@ namespace HS.Stride.UI.Editor
                 $"HS Stride UI Editor\n" +
                 $"Version {versionString}\n\n" +
                 "A standalone visual UI editor for the Stride game engine.\n\n" +
+                "CONTROLS:\n" +
+                "Ctrl/Alt + Scroll: Zoom in/out\n" +
+                "Shift + Scroll: Horizontal scroll\n" +
+                "Middle Mouse / Space + Drag: Pan canvas\n" +
+                "Shift + Drag: Maintain aspect ratio\n" +
+                "Alt + Drag: Scale from center\n" +
+                "Ctrl + Click: Multi-select\n" +
+                "Delete: Delete selected\n" +
+                "Ctrl+D: Duplicate selected\n" +
+                "Ctrl+Z/Y: Undo/Redo\n\n" +
                 "© 2025 Happenstance Games LLC\n" +
                 "Licensed under the MIT License\n\n" +
                 "Contact: Dave@happenstancegames.com",
