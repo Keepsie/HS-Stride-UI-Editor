@@ -400,34 +400,34 @@ namespace HS.Stride.UI.Editor.Views
             PropScrollStartThreshold.TextChanged += (s, e) =>
             {
                 if (_currentElement != null && !_isLoading && double.TryParse(PropScrollStartThreshold.Text, out double val))
-                    _currentElement.ScrollStartThreshold = Math.Max(0, val);
+                { _currentElement.ScrollStartThreshold = Math.Max(0, val); NotifyPropertyChanged(); }
             };
 
             // EditText properties - real-time updates
             PropMaxLength.TextChanged += (s, e) =>
             {
                 if (_currentElement != null && !_isLoading && int.TryParse(PropMaxLength.Text, out int val))
-                    _currentElement.MaxLength = Math.Max(0, val);
+                { _currentElement.MaxLength = Math.Max(0, val); NotifyPropertyChanged(); }
             };
             PropMinLines.TextChanged += (s, e) =>
             {
                 if (_currentElement != null && !_isLoading && int.TryParse(PropMinLines.Text, out int val))
-                    _currentElement.MinLines = Math.Max(1, val);
+                { _currentElement.MinLines = Math.Max(1, val); NotifyPropertyChanged(); }
             };
             PropMaxLines.TextChanged += (s, e) =>
             {
                 if (_currentElement != null && !_isLoading && int.TryParse(PropMaxLines.Text, out int val))
-                    _currentElement.MaxLines = Math.Max(1, val);
+                { _currentElement.MaxLines = Math.Max(1, val); NotifyPropertyChanged(); }
             };
             PropCaretWidth.TextChanged += (s, e) =>
             {
                 if (_currentElement != null && !_isLoading && double.TryParse(PropCaretWidth.Text, out double val))
-                    _currentElement.CaretWidth = Math.Max(0, val);
+                { _currentElement.CaretWidth = Math.Max(0, val); NotifyPropertyChanged(); }
             };
             PropCaretFrequency.TextChanged += (s, e) =>
             {
                 if (_currentElement != null && !_isLoading && double.TryParse(PropCaretFrequency.Text, out double val))
-                    _currentElement.CaretFrequency = Math.Max(0, val);
+                { _currentElement.CaretFrequency = Math.Max(0, val); NotifyPropertyChanged(); }
             };
 
             // ToggleButton state - real-time update with undo
@@ -1243,6 +1243,7 @@ namespace HS.Stride.UI.Editor.Views
             // Appearance
             PropBgColorPreview.Fill = new SolidColorBrush(element.BackgroundColor);
             PropOpacity.Value = element.Opacity;
+            PropOpacityText.Text = $"{(int)(element.Opacity * 100)}%";
             PropZIndex.Text = element.ZIndex.ToString();
             PropDrawLayer.Text = element.DrawLayerNumber.ToString();
             PropClipToBounds.IsChecked = element.ClipToBounds;
