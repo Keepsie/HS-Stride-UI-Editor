@@ -136,6 +136,15 @@ namespace HS.Stride.UI.Editor.Core.Services
                 RecalculatePositionsRecursive(root);
             }
 
+            // Recalculate Z-Index for all elements based on hierarchy order
+            // Stride often has all elements at the same Z-Index (0), which causes display issues
+            // when only some elements are edited. Force proper Z-order on load to fix this.
+            for (int i = 0; i < rootElements.Count; i++)
+            {
+                rootElements[i].ZIndex = i;
+                RecalculateZIndicesRecursive(rootElements[i]);
+            }
+
             return rootElements;
         }
 
@@ -151,6 +160,19 @@ namespace HS.Stride.UI.Editor.Core.Services
             foreach (var child in element.Children)
             {
                 RecalculatePositionsRecursive(child);
+            }
+        }
+
+        /// <summary>
+        /// Recursively set Z-Index for all children based on their position in the Children collection.
+        /// This ensures proper draw order when loading pages where Stride has all elements at Z-Index 0.
+        /// </summary>
+        private void RecalculateZIndicesRecursive(UIElementViewModel parent)
+        {
+            for (int i = 0; i < parent.Children.Count; i++)
+            {
+                parent.Children[i].ZIndex = i;
+                RecalculateZIndicesRecursive(parent.Children[i]);
             }
         }
 
