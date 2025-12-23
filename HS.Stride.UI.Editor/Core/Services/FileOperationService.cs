@@ -235,8 +235,8 @@ namespace HS.Stride.UI.Editor.Core.Services
             vm.HorizontalAlignment = hAlign;
             vm.VerticalAlignment = vAlign;
 
-            // Common appearance properties
-            vm.Opacity = toolkitElement.Get<float?>("Opacity") ?? 1.0f;
+            // Common appearance properties - use toolkit helper for proper type conversion
+            vm.Opacity = toolkitElement.GetOpacity();
             vm.DrawLayerNumber = toolkitElement.Get<int?>("DrawLayerNumber") ?? 0;
 
             // Load ZIndex using toolkit helper
@@ -532,13 +532,53 @@ namespace HS.Stride.UI.Editor.Core.Services
             // Click mode
             vm.ClickMode = element.Get<string>("ClickMode") ?? "Release";
 
-            // 3-state images (sprite references) - dot syntax (v1.6.0+)
-            vm.ButtonNotPressedImage = element.Get<string>("NotPressedImage.Sheet") ?? "";
-            vm.ButtonNotPressedFrame = element.Get<int?>("NotPressedImage.CurrentFrame") ?? 0;
-            vm.ButtonPressedImage = element.Get<string>("PressedImage.Sheet") ?? "";
-            vm.ButtonPressedFrame = element.Get<int?>("PressedImage.CurrentFrame") ?? 0;
-            vm.ButtonMouseOverImage = element.Get<string>("MouseOverImage.Sheet") ?? "";
-            vm.ButtonMouseOverFrame = element.Get<int?>("MouseOverImage.CurrentFrame") ?? 0;
+            // NotPressedImage - check sprite sheet first, then texture
+            if (element.IsSpriteFromSheet("NotPressedImage"))
+            {
+                var sprite = element.GetNotPressedImageSprite();
+                if (sprite.HasValue)
+                {
+                    vm.ButtonNotPressedImage = sprite.Value.AssetReference ?? "";
+                    vm.ButtonNotPressedFrame = sprite.Value.Frame;
+                }
+            }
+            else if (element.IsSpriteFromTexture("NotPressedImage"))
+            {
+                vm.ButtonNotPressedImage = element.GetNotPressedImageTexture() ?? "";
+                vm.ButtonNotPressedFrame = 0;
+            }
+
+            // PressedImage - check sprite sheet first, then texture
+            if (element.IsSpriteFromSheet("PressedImage"))
+            {
+                var sprite = element.GetPressedImageSprite();
+                if (sprite.HasValue)
+                {
+                    vm.ButtonPressedImage = sprite.Value.AssetReference ?? "";
+                    vm.ButtonPressedFrame = sprite.Value.Frame;
+                }
+            }
+            else if (element.IsSpriteFromTexture("PressedImage"))
+            {
+                vm.ButtonPressedImage = element.GetPressedImageTexture() ?? "";
+                vm.ButtonPressedFrame = 0;
+            }
+
+            // MouseOverImage - check sprite sheet first, then texture
+            if (element.IsSpriteFromSheet("MouseOverImage"))
+            {
+                var sprite = element.GetMouseOverImageSprite();
+                if (sprite.HasValue)
+                {
+                    vm.ButtonMouseOverImage = sprite.Value.AssetReference ?? "";
+                    vm.ButtonMouseOverFrame = sprite.Value.Frame;
+                }
+            }
+            else if (element.IsSpriteFromTexture("MouseOverImage"))
+            {
+                vm.ButtonMouseOverImage = element.GetMouseOverImageTexture() ?? "";
+                vm.ButtonMouseOverFrame = 0;
+            }
         }
 
         private void LoadImageElementProperties(UIElementViewModel vm, ToolkitUIElement element)
@@ -644,13 +684,54 @@ namespace HS.Stride.UI.Editor.Core.Services
             var iA = element.Get<byte?>("IMESelectionColor.A") ?? 255;
             vm.IMESelectionColor = Color.FromArgb(iA, iR, iG, iB);
 
-            // 3-state images - dot syntax (v1.6.0+)
-            vm.EditTextActiveImage = element.Get<string>("ActiveImage.Sheet") ?? "";
-            vm.EditTextActiveFrame = element.Get<int?>("ActiveImage.CurrentFrame") ?? 0;
-            vm.EditTextInactiveImage = element.Get<string>("InactiveImage.Sheet") ?? "";
-            vm.EditTextInactiveFrame = element.Get<int?>("InactiveImage.CurrentFrame") ?? 0;
-            vm.EditTextMouseOverImage = element.Get<string>("MouseOverImage.Sheet") ?? "";
-            vm.EditTextMouseOverFrame = element.Get<int?>("MouseOverImage.CurrentFrame") ?? 0;
+            // 3-state images - use proper toolkit helpers
+            // ActiveImage
+            if (element.IsSpriteFromSheet("ActiveImage"))
+            {
+                var sprite = element.GetActiveImageSprite();
+                if (sprite.HasValue)
+                {
+                    vm.EditTextActiveImage = sprite.Value.AssetReference ?? "";
+                    vm.EditTextActiveFrame = sprite.Value.Frame;
+                }
+            }
+            else if (element.IsSpriteFromTexture("ActiveImage"))
+            {
+                vm.EditTextActiveImage = element.GetTextureSource("ActiveImage") ?? "";
+                vm.EditTextActiveFrame = 0;
+            }
+
+            // InactiveImage
+            if (element.IsSpriteFromSheet("InactiveImage"))
+            {
+                var sprite = element.GetInactiveImageSprite();
+                if (sprite.HasValue)
+                {
+                    vm.EditTextInactiveImage = sprite.Value.AssetReference ?? "";
+                    vm.EditTextInactiveFrame = sprite.Value.Frame;
+                }
+            }
+            else if (element.IsSpriteFromTexture("InactiveImage"))
+            {
+                vm.EditTextInactiveImage = element.GetTextureSource("InactiveImage") ?? "";
+                vm.EditTextInactiveFrame = 0;
+            }
+
+            // MouseOverImage
+            if (element.IsSpriteFromSheet("MouseOverImage"))
+            {
+                var sprite = element.GetSpriteSheet("MouseOverImage");
+                if (sprite.HasValue)
+                {
+                    vm.EditTextMouseOverImage = sprite.Value.AssetReference ?? "";
+                    vm.EditTextMouseOverFrame = sprite.Value.Frame;
+                }
+            }
+            else if (element.IsSpriteFromTexture("MouseOverImage"))
+            {
+                vm.EditTextMouseOverImage = element.GetTextureSource("MouseOverImage") ?? "";
+                vm.EditTextMouseOverFrame = 0;
+            }
 
             // Font asset reference - load the actual font from the project
             var fontRef = element.Get<string>("Font");
@@ -685,17 +766,86 @@ namespace HS.Stride.UI.Editor.Core.Services
             vm.TrackStartingOffsetRight = element.Get<float?>("TrackStartingOffsets.Right") ?? 0f;
             vm.TrackStartingOffsetBottom = element.Get<float?>("TrackStartingOffsets.Bottom") ?? 0f;
 
-            // 5 sprite images - dot syntax (v1.6.0+)
-            vm.SliderTrackBackgroundImage = element.Get<string>("TrackBackgroundImage.Sheet") ?? "";
-            vm.SliderTrackBackgroundFrame = element.Get<int?>("TrackBackgroundImage.CurrentFrame") ?? 0;
-            vm.SliderTrackForegroundImage = element.Get<string>("TrackForegroundImage.Sheet") ?? "";
-            vm.SliderTrackForegroundFrame = element.Get<int?>("TrackForegroundImage.CurrentFrame") ?? 0;
-            vm.SliderThumbImage = element.Get<string>("ThumbImage.Sheet") ?? "";
-            vm.SliderThumbFrame = element.Get<int?>("ThumbImage.CurrentFrame") ?? 0;
-            vm.SliderMouseOverThumbImage = element.Get<string>("MouseOverThumbImage.Sheet") ?? "";
-            vm.SliderMouseOverThumbFrame = element.Get<int?>("MouseOverThumbImage.CurrentFrame") ?? 0;
-            vm.SliderTickImage = element.Get<string>("TickImage.Sheet") ?? "";
-            vm.SliderTickFrame = element.Get<int?>("TickImage.CurrentFrame") ?? 0;
+            // 5 sprite images - use proper toolkit helpers
+            // TrackBackgroundImage
+            if (element.IsSpriteFromSheet("TrackBackgroundImage"))
+            {
+                var sprite = element.GetTrackBackgroundImageSprite();
+                if (sprite.HasValue)
+                {
+                    vm.SliderTrackBackgroundImage = sprite.Value.AssetReference ?? "";
+                    vm.SliderTrackBackgroundFrame = sprite.Value.Frame;
+                }
+            }
+            else if (element.IsSpriteFromTexture("TrackBackgroundImage"))
+            {
+                vm.SliderTrackBackgroundImage = element.GetTextureSource("TrackBackgroundImage") ?? "";
+                vm.SliderTrackBackgroundFrame = 0;
+            }
+
+            // TrackForegroundImage
+            if (element.IsSpriteFromSheet("TrackForegroundImage"))
+            {
+                var sprite = element.GetSpriteSheet("TrackForegroundImage");
+                if (sprite.HasValue)
+                {
+                    vm.SliderTrackForegroundImage = sprite.Value.AssetReference ?? "";
+                    vm.SliderTrackForegroundFrame = sprite.Value.Frame;
+                }
+            }
+            else if (element.IsSpriteFromTexture("TrackForegroundImage"))
+            {
+                vm.SliderTrackForegroundImage = element.GetTextureSource("TrackForegroundImage") ?? "";
+                vm.SliderTrackForegroundFrame = 0;
+            }
+
+            // ThumbImage
+            if (element.IsSpriteFromSheet("ThumbImage"))
+            {
+                var sprite = element.GetThumbImageSprite();
+                if (sprite.HasValue)
+                {
+                    vm.SliderThumbImage = sprite.Value.AssetReference ?? "";
+                    vm.SliderThumbFrame = sprite.Value.Frame;
+                }
+            }
+            else if (element.IsSpriteFromTexture("ThumbImage"))
+            {
+                vm.SliderThumbImage = element.GetTextureSource("ThumbImage") ?? "";
+                vm.SliderThumbFrame = 0;
+            }
+
+            // MouseOverThumbImage
+            if (element.IsSpriteFromSheet("MouseOverThumbImage"))
+            {
+                var sprite = element.GetSpriteSheet("MouseOverThumbImage");
+                if (sprite.HasValue)
+                {
+                    vm.SliderMouseOverThumbImage = sprite.Value.AssetReference ?? "";
+                    vm.SliderMouseOverThumbFrame = sprite.Value.Frame;
+                }
+            }
+            else if (element.IsSpriteFromTexture("MouseOverThumbImage"))
+            {
+                vm.SliderMouseOverThumbImage = element.GetTextureSource("MouseOverThumbImage") ?? "";
+                vm.SliderMouseOverThumbFrame = 0;
+            }
+
+            // TickImage
+            if (element.IsSpriteFromSheet("TickImage"))
+            {
+                var sprite = element.GetSpriteSheet("TickImage");
+                if (sprite.HasValue)
+                {
+                    vm.SliderTickImage = sprite.Value.AssetReference ?? "";
+                    vm.SliderTickFrame = sprite.Value.Frame;
+                }
+            }
+            else if (element.IsSpriteFromTexture("TickImage"))
+            {
+                vm.SliderTickImage = element.GetTextureSource("TickImage") ?? "";
+                vm.SliderTickFrame = 0;
+            }
         }
 
         private void LoadToggleButtonProperties(UIElementViewModel vm, ToolkitUIElement element)
@@ -704,13 +854,54 @@ namespace HS.Stride.UI.Editor.Core.Services
             vm.IsThreeState = element.Get<bool?>("IsThreeState") ?? false;
             vm.ToggleClickMode = element.Get<string>("ClickMode") ?? "Release";  // Inherited from ButtonBase
 
-            // 3-state images - dot syntax (v1.6.0+)
-            vm.ToggleCheckedImage = element.Get<string>("CheckedImage.Sheet") ?? "";
-            vm.ToggleCheckedFrame = element.Get<int?>("CheckedImage.CurrentFrame") ?? 0;
-            vm.ToggleUncheckedImage = element.Get<string>("UncheckedImage.Sheet") ?? "";
-            vm.ToggleUncheckedFrame = element.Get<int?>("UncheckedImage.CurrentFrame") ?? 0;
-            vm.ToggleIndeterminateImage = element.Get<string>("IndeterminateImage.Sheet") ?? "";
-            vm.ToggleIndeterminateFrame = element.Get<int?>("IndeterminateImage.CurrentFrame") ?? 0;
+            // 3-state images - use proper toolkit helpers
+            // CheckedImage
+            if (element.IsSpriteFromSheet("CheckedImage"))
+            {
+                var sprite = element.GetCheckedImageSprite();
+                if (sprite.HasValue)
+                {
+                    vm.ToggleCheckedImage = sprite.Value.AssetReference ?? "";
+                    vm.ToggleCheckedFrame = sprite.Value.Frame;
+                }
+            }
+            else if (element.IsSpriteFromTexture("CheckedImage"))
+            {
+                vm.ToggleCheckedImage = element.GetTextureSource("CheckedImage") ?? "";
+                vm.ToggleCheckedFrame = 0;
+            }
+
+            // UncheckedImage
+            if (element.IsSpriteFromSheet("UncheckedImage"))
+            {
+                var sprite = element.GetUncheckedImageSprite();
+                if (sprite.HasValue)
+                {
+                    vm.ToggleUncheckedImage = sprite.Value.AssetReference ?? "";
+                    vm.ToggleUncheckedFrame = sprite.Value.Frame;
+                }
+            }
+            else if (element.IsSpriteFromTexture("UncheckedImage"))
+            {
+                vm.ToggleUncheckedImage = element.GetTextureSource("UncheckedImage") ?? "";
+                vm.ToggleUncheckedFrame = 0;
+            }
+
+            // IndeterminateImage
+            if (element.IsSpriteFromSheet("IndeterminateImage"))
+            {
+                var sprite = element.GetIndeterminateImageSprite();
+                if (sprite.HasValue)
+                {
+                    vm.ToggleIndeterminateImage = sprite.Value.AssetReference ?? "";
+                    vm.ToggleIndeterminateFrame = sprite.Value.Frame;
+                }
+            }
+            else if (element.IsSpriteFromTexture("IndeterminateImage"))
+            {
+                vm.ToggleIndeterminateImage = element.GetTextureSource("IndeterminateImage") ?? "";
+                vm.ToggleIndeterminateFrame = 0;
+            }
         }
 
         private void LoadModalElementProperties(UIElementViewModel vm, ToolkitUIElement element)
@@ -746,9 +937,23 @@ namespace HS.Stride.UI.Editor.Core.Services
             vm.BorderThicknessRight = element.Get<float?>("BorderThickness.Right") ?? 0f;
             vm.BorderThicknessBottom = element.Get<float?>("BorderThickness.Bottom") ?? 0f;
 
-            // Background image - dot syntax (v1.6.0+)
-            vm.BackgroundImageSource = element.Get<string>("BackgroundImage.Sheet") ?? "";
-            vm.BackgroundImageFrame = element.Get<int?>("BackgroundImage.CurrentFrame") ?? 0;
+            // Background image - use proper toolkit helpers
+            if (element.IsSpriteFromSheet("BackgroundImage"))
+            {
+                var sprite = element.GetBackgroundImageSprite();
+                if (sprite.HasValue)
+                {
+                    vm.BackgroundImageSource = sprite.Value.AssetReference ?? "";
+                    vm.BackgroundImageFrame = sprite.Value.Frame;
+                    vm.ContentDecoratorImageMode = "SpriteSheet";
+                }
+            }
+            else if (element.IsSpriteFromTexture("BackgroundImage"))
+            {
+                vm.BackgroundImageSource = element.GetBackgroundImageTexture() ?? "";
+                vm.BackgroundImageFrame = 0;
+                vm.ContentDecoratorImageMode = "Texture";
+            }
         }
 
         #endregion

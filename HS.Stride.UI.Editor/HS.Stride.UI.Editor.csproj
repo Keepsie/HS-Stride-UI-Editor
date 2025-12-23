@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>logo.ico</ApplicationIcon>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Copyright>Happenstance Games LLC</Copyright>
     <PackageIcon>hs_ui_editor.png</PackageIcon>
   </PropertyGroup>
