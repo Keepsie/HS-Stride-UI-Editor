@@ -183,9 +183,9 @@ namespace HS.Stride.UI.Editor.Core.Services
         {
             var vm = new UIElementViewModel(toolkitElement.Name, toolkitElement.Type);
 
-            // Get alignment first - needed for position calculation
-            var hAlign = toolkitElement.Get<string>("HorizontalAlignment") ?? "Stretch";
-            var vAlign = toolkitElement.Get<string>("VerticalAlignment") ?? "Stretch";
+            // Get alignment first - needed for position calculation (use toolkit helpers)
+            var hAlign = toolkitElement.GetHorizontalAlignment();
+            var vAlign = toolkitElement.GetVerticalAlignment();
 
             // Get margin values
             var margin = toolkitElement.GetMargin();
@@ -202,7 +202,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             // This must happen BEFORE position calculation so centering uses correct dimensions
             if (toolkitElement.Type == "TextBlock" && !width.HasValue && !height.HasValue)
             {
-                var text = toolkitElement.Get<string>("Text") ?? "";
+                var text = toolkitElement.GetText() ?? "";
                 var fontSize = toolkitElement.GetFontSize(); // Uses helper - defaults to 20f
                 var (measuredWidth, measuredHeight) = MeasureText(text, fontSize);
 
@@ -235,20 +235,20 @@ namespace HS.Stride.UI.Editor.Core.Services
             vm.HorizontalAlignment = hAlign;
             vm.VerticalAlignment = vAlign;
 
-            // Common appearance properties - use toolkit helper for proper type conversion
+            // Common appearance properties - use toolkit helpers for proper type conversion
             vm.Opacity = toolkitElement.GetOpacity();
-            vm.DrawLayerNumber = toolkitElement.Get<int?>("DrawLayerNumber") ?? 0;
+            vm.DrawLayerNumber = toolkitElement.GetDrawLayer();
 
             // Load ZIndex using toolkit helper
             vm.ZIndex = toolkitElement.GetZIndex();
 
-            // ClipToBounds
+            // ClipToBounds - no toolkit getter available
             vm.ClipToBounds = toolkitElement.Get<bool?>("ClipToBounds") ?? false;
 
-            // Behavior properties
-            vm.Visibility = toolkitElement.Get<string>("Visibility") ?? "Visible";
-            vm.IsEnabled = toolkitElement.Get<bool?>("IsEnabled") ?? true;
-            vm.CanBeHitByUser = toolkitElement.Get<bool?>("CanBeHitByUser") ?? false;
+            // Behavior properties - use toolkit helpers
+            vm.Visibility = toolkitElement.Get<string>("Visibility") ?? "Visible"; // No string getter, only IsVisible() bool
+            vm.IsEnabled = toolkitElement.GetIsEnabled();
+            vm.CanBeHitByUser = toolkitElement.GetCanBeHitByUser();
 
             // BackgroundColor (RGBA 0-255) - use toolkit helper
             var bgColor = toolkitElement.GetBackgroundColor();
@@ -488,11 +488,11 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void LoadTextBlockProperties(UIElementViewModel vm, ToolkitUIElement element)
         {
-            vm.Text = CleanTextValue(element.Get<string>("Text"));
+            vm.Text = CleanTextValue(element.GetText());
             vm.FontSize = element.GetFontSize(); // Uses helper - defaults to 20f if not set
-            vm.TextAlignment = element.Get<string>("TextAlignment") ?? "Left";
-            vm.WrapText = element.Get<bool?>("WrapText") ?? false;
-            vm.DoNotSnapText = element.Get<bool?>("DoNotSnapText") ?? false;
+            vm.TextAlignment = element.Get<string>("TextAlignment") ?? "Left"; // No toolkit getter
+            vm.WrapText = element.GetWrapText();
+            vm.DoNotSnapText = element.GetDoNotSnapText();
 
             // Text color - use toolkit helper
             var textColor = element.GetTextColor();
@@ -510,7 +510,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             vm.TextOutlineThickness = element.Get<float?>("OutlineThickness") ?? 0f;
 
             // Font asset reference - load the actual font from the project
-            var fontRef = element.Get<string>("Font");
+            var fontRef = element.GetFont();
             if (!string.IsNullOrEmpty(fontRef) && _assetService != null)
             {
                 // Clean up any quotes that may have been incorrectly added
@@ -529,8 +529,8 @@ namespace HS.Stride.UI.Editor.Core.Services
             var buttonText = CleanTextValue(element.Get<string>("Content.Text"));
             vm.ButtonText = string.IsNullOrEmpty(buttonText) ? vm.Name : buttonText;
 
-            // Click mode
-            vm.ClickMode = element.Get<string>("ClickMode") ?? "Release";
+            // Click mode - use toolkit helper
+            vm.ClickMode = element.GetClickMode();
 
             // NotPressedImage - check sprite sheet first, then texture
             if (element.IsSpriteFromSheet("NotPressedImage"))
@@ -614,28 +614,28 @@ namespace HS.Stride.UI.Editor.Core.Services
             var color = element.GetColor();
             vm.ImageTintColor = Color.FromArgb((byte)color.A, (byte)color.R, (byte)color.G, (byte)color.B);
 
-            // Stretch properties
-            vm.StretchType = element.Get<string>("StretchType") ?? "FillOnStretch";
-            vm.StretchDirection = element.Get<string>("StretchDirection") ?? "Both";
+            // Stretch properties - use toolkit helpers
+            vm.StretchType = element.GetStretchType();
+            vm.StretchDirection = element.GetStretchDirection();
         }
 
         private void LoadStackPanelProperties(UIElementViewModel vm, ToolkitUIElement element)
         {
-            vm.StackPanelOrientation = element.Get<string>("Orientation") ?? "Vertical";
-            vm.ItemVirtualizationEnabled = element.Get<bool?>("ItemVirtualizationEnabled") ?? false;
+            vm.StackPanelOrientation = element.GetOrientation();
+            vm.ItemVirtualizationEnabled = element.Get<bool?>("ItemVirtualizationEnabled") ?? false; // No toolkit getter
         }
 
         private void LoadScrollViewerProperties(UIElementViewModel vm, ToolkitUIElement element)
         {
-            vm.ScrollMode = element.Get<string>("ScrollMode") ?? "Horizontal";  // Stride default
-            vm.ScrollBarThickness = element.Get<float?>("ScrollBarThickness") ?? 6.0f;  // Stride default
-            vm.ScrollingSpeed = element.Get<float?>("ScrollingSpeed") ?? 800.0f;
-            vm.Deceleration = element.Get<float?>("Deceleration") ?? 1500.0f;  // Stride default
-            vm.ScrollStartThreshold = element.Get<float?>("ScrollStartThreshold") ?? 10.0f;  // Stride default
-            vm.TouchScrollingEnabled = element.Get<bool?>("TouchScrollingEnabled") ?? true;
-            vm.SnapToAnchors = element.Get<bool?>("SnapToAnchors") ?? false;  // Stride default
+            vm.ScrollMode = element.GetScrollMode();
+            vm.ScrollBarThickness = element.GetScrollBarThickness();
+            vm.ScrollingSpeed = element.GetScrollingSpeed();
+            vm.Deceleration = element.GetDeceleration();
+            vm.ScrollStartThreshold = element.GetScrollStartThreshold();
+            vm.TouchScrollingEnabled = element.Get<bool?>("TouchScrollingEnabled") ?? true; // No toolkit getter
+            vm.SnapToAnchors = element.Get<bool?>("SnapToAnchors") ?? false; // No toolkit getter
 
-            // Dot syntax (v1.6.0+)
+            // ScrollBarColor - no toolkit getter available
             var r = element.Get<byte?>("ScrollBarColor.R") ?? 26;   // Stride default Color(0.1f, 0.1f, 0.1f)
             var g = element.Get<byte?>("ScrollBarColor.G") ?? 26;
             var b = element.Get<byte?>("ScrollBarColor.B") ?? 26;
@@ -645,23 +645,23 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void LoadEditTextProperties(UIElementViewModel vm, ToolkitUIElement element)
         {
-            vm.Text = CleanTextValue(element.Get<string>("Text"));
+            vm.Text = CleanTextValue(element.GetText());
             vm.FontSize = element.GetFontSize(); // Uses helper - defaults to 20f
 
-            // Text color - dot syntax (v1.6.0+)
+            // Text color - no toolkit getter available for EditText TextColor
             var r = element.Get<byte?>("TextColor.R") ?? 240;
             var g = element.Get<byte?>("TextColor.G") ?? 240;
             var b = element.Get<byte?>("TextColor.B") ?? 240;
             var a = element.Get<byte?>("TextColor.A") ?? 255;
             vm.TextColor = Color.FromArgb(a, r, g, b);
 
-            vm.MaxLength = element.Get<int?>("MaxLength") ?? 0;
-            vm.IsReadOnly = element.Get<bool?>("IsReadOnly") ?? false;
-            vm.InputType = element.Get<string>("InputType") ?? "None";
-            vm.MinLines = element.Get<int?>("MinLines") ?? 1;
-            vm.MaxLines = element.Get<int?>("MaxLines") ?? int.MaxValue;
-            vm.CaretWidth = element.Get<float?>("CaretWidth") ?? 1.0f;
-            vm.CaretFrequency = element.Get<float?>("CaretFrequency") ?? 1.0f;
+            vm.MaxLength = element.GetMaxLength();
+            vm.IsReadOnly = element.GetIsReadOnly();
+            vm.InputType = element.GetInputType();
+            vm.MinLines = element.GetMinLines();
+            vm.MaxLines = element.GetMaxLines();
+            vm.CaretWidth = element.Get<float?>("CaretWidth") ?? 1.0f; // No toolkit getter
+            vm.CaretFrequency = element.GetCaretFrequency();
 
             // Caret color - dot syntax (v1.6.0+)
             var cR = element.Get<byte?>("CaretColor.R") ?? 240;
@@ -734,7 +734,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
 
             // Font asset reference - load the actual font from the project
-            var fontRef = element.Get<string>("Font");
+            var fontRef = element.GetFont();
             if (!string.IsNullOrEmpty(fontRef) && _assetService != null)
             {
                 // Clean up any quotes that may have been incorrectly added
@@ -749,16 +749,16 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void LoadSliderProperties(UIElementViewModel vm, ToolkitUIElement element)
         {
-            vm.SliderMinimum = element.Get<float?>("Minimum") ?? 0f;
-            vm.SliderMaximum = element.Get<float?>("Maximum") ?? 1f;
-            vm.SliderValue = element.Get<float?>("Value") ?? 0f;
-            vm.SliderStep = element.Get<float?>("Step") ?? 0.1f;
-            vm.SliderTickFrequency = element.Get<float?>("TickFrequency") ?? 10f;
-            vm.SliderTickOffset = element.Get<float?>("TickOffset") ?? 10f;
-            vm.SliderOrientation = element.Get<string>("Orientation") ?? "Horizontal";
-            vm.AreTicksDisplayed = element.Get<bool?>("AreTicksDisplayed") ?? false;
-            vm.ShouldSnapToTicks = element.Get<bool?>("ShouldSnapToTicks") ?? false;
-            vm.IsDirectionReversed = element.Get<bool?>("IsDirectionReversed") ?? false;
+            vm.SliderMinimum = element.GetSliderMinimum();
+            vm.SliderMaximum = element.GetSliderMaximum();
+            vm.SliderValue = element.GetSliderValue();
+            vm.SliderStep = element.Get<float?>("Step") ?? 0.1f; // No toolkit getter
+            vm.SliderTickFrequency = element.Get<float?>("TickFrequency") ?? 10f; // No toolkit getter
+            vm.SliderTickOffset = element.GetTickOffset();
+            vm.SliderOrientation = element.Get<string>("Orientation") ?? "Horizontal"; // No slider-specific getter
+            vm.AreTicksDisplayed = element.GetAreTicksDisplayed();
+            vm.ShouldSnapToTicks = element.GetShouldSnapToTicks();
+            vm.IsDirectionReversed = element.GetIsDirectionReversed();
 
             // Track starting offsets - dot syntax (v1.6.0+)
             vm.TrackStartingOffsetLeft = element.Get<float?>("TrackStartingOffsets.Left") ?? 0f;
@@ -850,9 +850,9 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void LoadToggleButtonProperties(UIElementViewModel vm, ToolkitUIElement element)
         {
-            vm.ToggleState = element.Get<string>("State") ?? "UnChecked";  // Stride default
-            vm.IsThreeState = element.Get<bool?>("IsThreeState") ?? false;
-            vm.ToggleClickMode = element.Get<string>("ClickMode") ?? "Release";  // Inherited from ButtonBase
+            vm.ToggleState = element.Get<string>("State") ?? "UnChecked";  // No string getter, only IsChecked() bool
+            vm.IsThreeState = element.Get<bool?>("IsThreeState") ?? false; // No toolkit getter
+            vm.ToggleClickMode = element.GetClickMode();
 
             // 3-state images - use proper toolkit helpers
             // CheckedImage
@@ -906,7 +906,7 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void LoadModalElementProperties(UIElementViewModel vm, ToolkitUIElement element)
         {
-            vm.IsModal = element.Get<bool?>("IsModal") ?? true;
+            vm.IsModal = element.GetIsModal();
 
             // Overlay color - dot syntax (v1.6.0+)
             var r = element.Get<byte?>("OverlayColor.R") ?? 0;
@@ -1134,19 +1134,19 @@ namespace HS.Stride.UI.Editor.Core.Services
             // Set Panel.ZIndex using toolkit helper - controls draw order in Stride
             element.SetZIndex(vm.ZIndex);
 
-            // These may need raw Set if no helper exists
+            // Appearance properties - use toolkit helpers
             if (vm.DrawLayerNumber != 0)
-                element.Set("DrawLayerNumber", vm.DrawLayerNumber);
+                element.SetDrawLayer(vm.DrawLayerNumber);
             if (vm.ClipToBounds)
-                element.Set("ClipToBounds", vm.ClipToBounds);
+                element.SetClipToBounds(vm.ClipToBounds);
 
-            // Behavior properties
+            // Behavior properties - use toolkit helpers
             if (vm.Visibility != "Visible")
-                element.Set("Visibility", vm.Visibility);
+                element.SetVisibility(false);
             if (!vm.IsEnabled)
-                element.Set("IsEnabled", false);
+                element.SetIsEnabled(false);
             if (!vm.CanBeHitByUser)
-                element.Set("CanBeHitByUser", false);
+                element.SetCanBeHitByUser(false);
 
             // Background color using helper
             if (vm.BackgroundColor.A > 0)
@@ -1217,29 +1217,26 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void SaveTextBlockProperties(ToolkitUIElement element, UIElementViewModel vm)
         {
-            element.Set("Text", vm.Text);
-            element.SetFontSize((float)vm.FontSize); // Uses helper
-            element.Set("TextAlignment", vm.TextAlignment);
-            element.Set("WrapText", vm.WrapText);
+            element.SetText(vm.Text);
+            element.SetFontSize((float)vm.FontSize);
+            element.Set("TextAlignment", vm.TextAlignment); // No toolkit helper
+            element.SetWrapText(vm.WrapText);
             if (vm.DoNotSnapText)
-                element.Set("DoNotSnapText", true);
+                element.SetDoNotSnapText(true);
 
-            // Use helper method (v1.6.0+)
+            // Use helper method
             element.SetTextColor(vm.TextColor.R, vm.TextColor.G, vm.TextColor.B, vm.TextColor.A);
 
             if (vm.TextOutlineThickness > 0)
             {
-                element.Set("OutlineColor.R", vm.TextOutlineColor.R);
-                element.Set("OutlineColor.G", vm.TextOutlineColor.G);
-                element.Set("OutlineColor.B", vm.TextOutlineColor.B);
-                element.Set("OutlineColor.A", vm.TextOutlineColor.A);
-                element.Set("OutlineThickness", (float)vm.TextOutlineThickness);
+                element.SetOutlineColor(vm.TextOutlineColor.R, vm.TextOutlineColor.G, vm.TextOutlineColor.B, vm.TextOutlineColor.A);
+                element.SetOutlineThickness((float)vm.TextOutlineThickness);
             }
 
             // Font asset reference (format: "guid:path")
             if (!string.IsNullOrEmpty(vm.FontAssetReference))
             {
-                element.Set("Font", vm.FontAssetReference);
+                element.Set("Font", vm.FontAssetReference); // SetFont takes AssetReference, not string
             }
         }
 
@@ -1347,42 +1344,39 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void SaveStackPanelProperties(ToolkitUIElement element, UIElementViewModel vm)
         {
-            element.Set("Orientation", vm.StackPanelOrientation);
+            element.SetOrientation(vm.StackPanelOrientation);
             if (vm.ItemVirtualizationEnabled)
-                element.Set("ItemVirtualizationEnabled", true);
+                element.Set("ItemVirtualizationEnabled", true); // No toolkit helper
         }
 
         private void SaveScrollViewerProperties(ToolkitUIElement element, UIElementViewModel vm)
         {
             // ScrollMode - Stride default is Horizontal
             if (vm.ScrollMode != "Horizontal")
-                element.Set("ScrollMode", vm.ScrollMode);
+                element.SetScrollMode(vm.ScrollMode);
 
-            // ScrollBar properties
+            // ScrollBar properties - use toolkit helpers
             if (Math.Abs(vm.ScrollBarThickness - 6.0) > 0.1)
-                element.Set("ScrollBarThickness", (float)vm.ScrollBarThickness);
+                element.SetScrollBarThickness((float)vm.ScrollBarThickness);
             if (Math.Abs(vm.ScrollingSpeed - 800.0) > 1.0)
-                element.Set("ScrollingSpeed", (float)vm.ScrollingSpeed);
+                element.SetScrollingSpeed((float)vm.ScrollingSpeed);
             if (Math.Abs(vm.Deceleration - 1500.0) > 1.0)
-                element.Set("Deceleration", (float)vm.Deceleration);
+                element.SetDeceleration((float)vm.Deceleration);
             if (Math.Abs(vm.ScrollStartThreshold - 10.0) > 0.1)
-                element.Set("ScrollStartThreshold", (float)vm.ScrollStartThreshold);
+                element.SetScrollStartThreshold((float)vm.ScrollStartThreshold);
             if (!vm.TouchScrollingEnabled)
-                element.Set("TouchScrollingEnabled", false);
+                element.SetTouchScrollingEnabled(false);
             if (vm.SnapToAnchors)  // Default is false
-                element.Set("SnapToAnchors", true);
+                element.SetSnapToAnchors(true);
 
-            // Use dot syntax (v1.6.0+)
-            element.Set("ScrollBarColor.R", vm.ScrollBarColor.R);
-            element.Set("ScrollBarColor.G", vm.ScrollBarColor.G);
-            element.Set("ScrollBarColor.B", vm.ScrollBarColor.B);
-            element.Set("ScrollBarColor.A", vm.ScrollBarColor.A);
+            // ScrollBarColor - use toolkit helper
+            element.SetScrollBarColor(vm.ScrollBarColor.R, vm.ScrollBarColor.G, vm.ScrollBarColor.B, vm.ScrollBarColor.A);
         }
 
         private void SaveEditTextProperties(ToolkitUIElement element, UIElementViewModel vm)
         {
-            element.Set("Text", vm.Text);
-            element.SetFontSize((float)vm.FontSize); // Uses helper
+            element.SetText(vm.Text);
+            element.SetFontSize((float)vm.FontSize);
 
             // EditText uses TextColor but SetTextColor helper only works for TextBlock/ScrollingText
             // Use raw Set with dictionary for EditText
@@ -1397,17 +1391,17 @@ namespace HS.Stride.UI.Editor.Core.Services
             element.SetMaxLength(vm.MaxLength);
             element.SetIsReadOnly(vm.IsReadOnly);
 
-            // New EditText properties
+            // EditText properties - use toolkit helpers
             if (vm.InputType != "None")
-                element.Set("InputType", vm.InputType);
+                element.SetInputType(vm.InputType);
             if (vm.MinLines > 1)
-                element.Set("MinLines", vm.MinLines);
+                element.SetMinLines(vm.MinLines);
             if (vm.MaxLines < int.MaxValue)
-                element.Set("MaxLines", vm.MaxLines);
+                element.SetMaxLines(vm.MaxLines);
             if (Math.Abs(vm.CaretWidth - 1.0) > 0.01)
-                element.Set("CaretWidth", (float)vm.CaretWidth);
+                element.Set("CaretWidth", (float)vm.CaretWidth); // No toolkit helper
             if (Math.Abs(vm.CaretFrequency - 1.0) > 0.01)
-                element.Set("CaretFrequency", (float)vm.CaretFrequency);
+                element.SetCaretFrequency((float)vm.CaretFrequency);
 
             // Colors using helper methods (v1.6.0+)
             element.SetCaretColor(vm.CaretColor.R, vm.CaretColor.G, vm.CaretColor.B, vm.CaretColor.A);
@@ -1471,19 +1465,19 @@ namespace HS.Stride.UI.Editor.Core.Services
             element.SetValue((float)vm.SliderValue);
             element.SetStep((float)vm.SliderStep);
 
-            // Tick properties
+            // Tick properties - use toolkit helpers where available
             if (vm.SliderTickFrequency > 0)
-                element.Set("TickFrequency", (float)vm.SliderTickFrequency);
+                element.Set("TickFrequency", (float)vm.SliderTickFrequency); // No toolkit helper
             if (vm.SliderTickOffset > 0)
-                element.Set("TickOffset", (float)vm.SliderTickOffset);
+                element.SetTickOffset((float)vm.SliderTickOffset);
             if (vm.SliderOrientation != "Horizontal")
-                element.Set("Orientation", vm.SliderOrientation);
+                element.Set("Orientation", vm.SliderOrientation); // No slider-specific helper
             if (vm.AreTicksDisplayed)
-                element.Set("AreTicksDisplayed", true);
+                element.SetAreTicksDisplayed(true);
             if (vm.ShouldSnapToTicks)
-                element.Set("ShouldSnapToTicks", true);
+                element.SetShouldSnapToTicks(true);
             if (vm.IsDirectionReversed)
-                element.Set("IsDirectionReversed", true);
+                element.SetIsDirectionReversed(true);
 
             // Track starting offsets - use Thickness format
             if (vm.TrackStartingOffsetLeft > 0 || vm.TrackStartingOffsetTop > 0 ||
@@ -1619,15 +1613,12 @@ namespace HS.Stride.UI.Editor.Core.Services
         private void SaveModalElementProperties(ToolkitUIElement element, UIElementViewModel vm)
         {
             if (!vm.IsModal)
-                element.Set("IsModal", false);
+                element.SetIsModal(false);
 
-            // Overlay color - use dot syntax
+            // Overlay color - use toolkit helper
             if (vm.OverlayColor.A > 0)
             {
-                element.Set("OverlayColor.R", vm.OverlayColor.R);
-                element.Set("OverlayColor.G", vm.OverlayColor.G);
-                element.Set("OverlayColor.B", vm.OverlayColor.B);
-                element.Set("OverlayColor.A", vm.OverlayColor.A);
+                element.SetOverlayColor(vm.OverlayColor.R, vm.OverlayColor.G, vm.OverlayColor.B, vm.OverlayColor.A);
             }
         }
 
@@ -1641,26 +1632,21 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void SaveContentDecoratorProperties(ToolkitUIElement element, UIElementViewModel vm)
         {
-            // Border color - use dot syntax
+            // Border color - use toolkit helper
             if (vm.BorderColor.A > 0)
             {
-                element.Set("BorderColor.R", vm.BorderColor.R);
-                element.Set("BorderColor.G", vm.BorderColor.G);
-                element.Set("BorderColor.B", vm.BorderColor.B);
-                element.Set("BorderColor.A", vm.BorderColor.A);
+                element.SetBorderColor(vm.BorderColor.R, vm.BorderColor.G, vm.BorderColor.B, vm.BorderColor.A);
             }
 
-            // Border thickness - use Thickness format
+            // Border thickness - use toolkit helper
             if (vm.BorderThicknessLeft > 0 || vm.BorderThicknessTop > 0 ||
                 vm.BorderThicknessRight > 0 || vm.BorderThicknessBottom > 0)
             {
-                element.Set("BorderThickness", new Dictionary<string, object>
-                {
-                    ["Left"] = (float)vm.BorderThicknessLeft,
-                    ["Top"] = (float)vm.BorderThicknessTop,
-                    ["Right"] = (float)vm.BorderThicknessRight,
-                    ["Bottom"] = (float)vm.BorderThicknessBottom
-                });
+                element.SetBorderThickness(
+                    (float)vm.BorderThicknessLeft,
+                    (float)vm.BorderThicknessTop,
+                    (float)vm.BorderThicknessRight,
+                    (float)vm.BorderThicknessBottom);
             }
 
             // Background image using sprite/texture helpers
