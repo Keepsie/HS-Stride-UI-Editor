@@ -1243,6 +1243,7 @@ namespace HS.Stride.UI.Editor.Views
             // Appearance
             PropBgColorPreview.Fill = new SolidColorBrush(element.BackgroundColor);
             PropOpacity.Value = element.Opacity;
+            PropOpacityText.Text = $"{(int)(element.Opacity * 100)}%";
             PropZIndex.Text = element.ZIndex.ToString();
             PropDrawLayer.Text = element.DrawLayerNumber.ToString();
             PropClipToBounds.IsChecked = element.ClipToBounds;
