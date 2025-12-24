@@ -525,9 +525,10 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void LoadButtonProperties(UIElementViewModel vm, ToolkitUIElement element)
         {
-            // Button text comes from Content child TextBlock - dot syntax (v1.6.0+)
-            var buttonText = CleanTextValue(element.Get<string>("Content.Text"));
-            vm.ButtonText = string.IsNullOrEmpty(buttonText) ? vm.Name : buttonText;
+            // Button text comes from Content child TextBlock
+            var contentElement = element.GetContent();
+            var buttonText = contentElement != null ? CleanTextValue(contentElement.GetText()) : null;
+            vm.ButtonText = string.IsNullOrEmpty(buttonText) ? "Button" : buttonText;
 
             // Click mode - use toolkit helper
             vm.ClickMode = element.GetClickMode();
