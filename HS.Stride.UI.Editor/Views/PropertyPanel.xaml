@@ -426,11 +426,6 @@
                 <Expander x:Name="ButtonProperties" Header="Button" IsExpanded="True" Style="{StaticResource ModernExpander}" Margin="0,0,0,12" Visibility="Collapsed">
                     <StackPanel Margin="0,8,0,0">
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Button Text" Style="{StaticResource PropertyLabel}"/>
-                            <TextBox x:Name="PropButtonText" Style="{StaticResource ModernTextBox}"/>
-                        </StackPanel>
-
-                        <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="Click Mode" Style="{StaticResource PropertyLabel}" ToolTip="When the click event fires"/>
                             <ComboBox x:Name="PropClickMode" Style="{StaticResource ModernComboBox}">
                                 <ComboBoxItem Content="Release" IsSelected="True"/>

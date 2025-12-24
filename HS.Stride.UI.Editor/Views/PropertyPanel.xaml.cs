@@ -148,7 +148,6 @@ namespace HS.Stride.UI.Editor.Views
             // Text properties
             SetupTextBoxUndoTracking(PropText, "Text", () => _currentElement?.Text);
             SetupTextBoxUndoTracking(PropFontSize, "FontSize", () => _currentElement?.FontSize);
-            SetupTextBoxUndoTracking(PropButtonText, "ButtonText", () => _currentElement?.ButtonText);
             SetupTextBoxUndoTracking(PropTextOutlineThickness, "TextOutlineThickness", () => _currentElement?.TextOutlineThickness);
 
             // Image properties
@@ -218,9 +217,6 @@ namespace HS.Stride.UI.Editor.Views
             // Text properties
             PropText.TextChanged += (s, e) => { if (_currentElement != null && !_isLoading) { _currentElement.Text = PropText.Text; NotifyPropertyChanged(); } };
             PropFontSize.TextChanged += (s, e) => UpdateRealTimeProperty("FontSize", PropFontSize.Text);
-
-            // Button text
-            PropButtonText.TextChanged += (s, e) => { if (_currentElement != null && !_isLoading) { _currentElement.ButtonText = PropButtonText.Text; NotifyPropertyChanged(); } };
 
             // Combo boxes - alignment changes trigger position recalculation in ViewModel (with undo)
             PropHAlign.SelectionChanged += (s, e) => {
@@ -1373,7 +1369,6 @@ namespace HS.Stride.UI.Editor.Views
         private void LoadButtonProperties(UIElementViewModel element)
         {
             ButtonProperties.Visibility = Visibility.Visible;
-            PropButtonText.Text = element.ButtonText;
             SetComboBoxValue(PropClickMode, element.ClickMode);
             SetComboBoxValue(PropButtonImageMode, element.ButtonImageMode);
 

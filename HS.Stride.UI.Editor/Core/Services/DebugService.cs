@@ -143,7 +143,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             {
                 "TextBlock" => new { element.Text, element.FontSize, element.TextAlignment },
                 "ImageElement" => new { element.ImageSource, element.StretchType, element.SpriteFrame },
-                "Button" => new { element.ButtonText },
+                "Button" => new { element.ClickMode },
                 "Grid" => new { element.RowDefinitions, element.ColumnDefinitions },
                 "StackPanel" => new { Orientation = element.StackPanelOrientation },
                 _ => null
