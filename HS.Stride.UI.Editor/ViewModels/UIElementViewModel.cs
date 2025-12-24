@@ -61,8 +61,8 @@ namespace HS.Stride.UI.Editor.ViewModels
         private bool _wrapText = false;
         private bool _doNotSnapText = false; // Disable text snapping to pixel grid
 
-        // Button Properties
-        private string _buttonText = "Button";
+        // Button/ToggleButton Properties
+        private string _buttonText = ""; // Used by ToggleButton for label
         private string _clickMode = "Release"; // Release, Press, Hover
         private string _buttonImageMode = "SpriteSheet"; // "Texture" or "SpriteSheet"
 
@@ -514,8 +514,8 @@ namespace HS.Stride.UI.Editor.ViewModels
             set { _fontAssetReference = value; OnPropertyChanged(); }
         }
 
-        // Button Properties
-        public string ButtonText
+        // Button/ToggleButton Properties
+        public string ButtonText  // Used by ToggleButton for label
         {
             get => _buttonText;
             set { _buttonText = value; OnPropertyChanged(); }
@@ -1329,7 +1329,6 @@ namespace HS.Stride.UI.Editor.ViewModels
             switch (ElementType)
             {
                 case "Button":
-                    ButtonText = Name;
                     Width = 200;
                     Height = 100;
                     break;
@@ -1430,7 +1429,7 @@ namespace HS.Stride.UI.Editor.ViewModels
                 WrapText = WrapText,
                 DoNotSnapText = DoNotSnapText,
 
-                // Button
+                // Button/ToggleButton
                 ButtonText = ButtonText,
                 ClickMode = ClickMode,
                 ButtonImageMode = ButtonImageMode,

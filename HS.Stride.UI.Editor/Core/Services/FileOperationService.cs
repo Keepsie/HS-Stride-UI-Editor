@@ -318,6 +318,19 @@ namespace HS.Stride.UI.Editor.Core.Services
                 vm.Children.Add(childVM);
             }
 
+            // For ContentControls (Button, ToggleButton), Content is separate from Children
+            // Load Content element as a child if it exists
+            if (toolkitElement.Type == "Button" || toolkitElement.Type == "ToggleButton")
+            {
+                var content = toolkitElement.GetContent();
+                if (content != null)
+                {
+                    var contentVM = ConvertToolkitElementToViewModel(content);
+                    contentVM.Parent = vm;
+                    vm.Children.Add(contentVM);
+                }
+            }
+
             return vm;
         }
 
@@ -525,11 +538,6 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void LoadButtonProperties(UIElementViewModel vm, ToolkitUIElement element)
         {
-            // Button text comes from Content child TextBlock
-            var contentElement = element.GetContent();
-            var buttonText = contentElement != null ? CleanTextValue(contentElement.GetText()) : null;
-            vm.ButtonText = string.IsNullOrEmpty(buttonText) ? "Button" : buttonText;
-
             // Click mode - use toolkit helper
             vm.ClickMode = element.GetClickMode();
 
@@ -1115,7 +1123,7 @@ namespace HS.Stride.UI.Editor.Core.Services
         /// <param name="page">The UIPage to add the element to</param>
         /// <param name="parent">The parent toolkit element (null for root elements)</param>
         /// <param name="siblingIndex">The index among siblings, used to set Canvas.ZIndex for draw order</param>
-        private void ConvertViewModelToToolkitElement(UIElementViewModel vm, UIPage page, ToolkitUIElement? parent, int siblingIndex = 0)
+        private ToolkitUIElement ConvertViewModelToToolkitElement(UIElementViewModel vm, UIPage page, ToolkitUIElement? parent, int siblingIndex = 0)
         {
             // NOTE: We DO export system elements (hidden root Grid) - they're the actual root container
             // IsSystemElement is only for hiding from editor UI, not for skipping export
@@ -1210,10 +1218,21 @@ namespace HS.Stride.UI.Editor.Core.Services
 
             // Recursively convert children with sibling indices for Canvas.ZIndex
             int childIndex = 0;
+            ToolkitUIElement? firstChild = null;
             foreach (var childVM in vm.Children)
             {
-                ConvertViewModelToToolkitElement(childVM, page, element, childIndex++);
+                var childElement = ConvertViewModelToToolkitElement(childVM, page, element, childIndex++);
+                if (firstChild == null)
+                    firstChild = childElement;
             }
+
+            // For ContentControls (Button, ToggleButton), set Content to first child
+            if ((vm.ElementType == "Button" || vm.ElementType == "ToggleButton") && firstChild != null)
+            {
+                element.SetContent(firstChild);
+            }
+
+            return element;
         }
 
         private void SaveTextBlockProperties(ToolkitUIElement element, UIElementViewModel vm)
@@ -1263,11 +1282,6 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void SaveButtonProperties(ToolkitUIElement element, UIElementViewModel vm, UIPage page)
         {
-            // Button needs a TextBlock child for the label (Content property)
-            var textBlock = page.CreateElement("TextBlock", vm.Name + "_Text", element);
-            textBlock.Set("Text", vm.ButtonText);
-            element.Set("Content", textBlock); // Reference to TextBlock
-
             // Click mode
             if (vm.ClickMode != "Release")
                 element.SetClickMode(vm.ClickMode);

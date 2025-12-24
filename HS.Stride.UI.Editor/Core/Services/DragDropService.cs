@@ -46,6 +46,21 @@ namespace HS.Stride.UI.Editor.Core.Services
                 Height = 100
             };
 
+            // Auto-add TextBlock child for Button (like Stride does)
+            if (factory.ElementType == "Button")
+            {
+                var textChild = new UIElementViewModel(
+                    _generateElementName("Text"),
+                    "TextBlock")
+                {
+                    Text = "Button",
+                    Width = 200,
+                    Height = 100
+                };
+                textChild.Parent = newElement;
+                newElement.Children.Add(textChild);
+            }
+
             return new CreateElementCommand(
                 newElement,
                 parent,
@@ -126,6 +141,21 @@ namespace HS.Stride.UI.Editor.Core.Services
                 Width = 200,
                 Height = 100
             };
+
+            // Auto-add TextBlock child for Button (like Stride does)
+            if (factory.ElementType == "Button")
+            {
+                var textChild = new UIElementViewModel(
+                    _generateElementName("Text"),
+                    "TextBlock")
+                {
+                    Text = "Button",
+                    Width = 200,
+                    Height = 100
+                };
+                textChild.Parent = newElement;
+                newElement.Children.Add(textChild);
+            }
 
             return new CreateElementCommand(
                 newElement,
