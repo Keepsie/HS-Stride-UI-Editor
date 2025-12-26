@@ -71,6 +71,10 @@ namespace HS.Stride.UI.Editor
 
             foreach (var element in _selectedElements)
             {
+                // Skip button content - position is controlled by alignment only
+                if (element.IsButtonContent)
+                    continue;
+
                 var oldX = element.X;
                 var oldY = element.Y;
 
