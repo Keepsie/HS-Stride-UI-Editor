@@ -1189,9 +1189,20 @@ namespace HS.Stride.UI.Editor
         {
             if (e.Key == Key.Enter || e.Key == Key.Escape)
             {
-                // Move focus away from the TextBox
-                Keyboard.ClearFocus();
+                // Move focus to the canvas so arrow keys work for element movement
+                EditorCanvas.Focus();
                 e.Handled = true;
+            }
+        }
+
+        private void SnapValueTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            // When TextBox loses focus, ensure canvas can receive keyboard input
+            // Only focus canvas if no other focusable element has taken focus
+            var focusedElement = Keyboard.FocusedElement as DependencyObject;
+            if (focusedElement == null || focusedElement == this)
+            {
+                EditorCanvas.Focus();
             }
         }
 
