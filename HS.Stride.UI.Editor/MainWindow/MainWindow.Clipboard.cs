@@ -95,6 +95,7 @@ namespace HS.Stride.UI.Editor
             }
 
             UpdatePropertyPanel();
+            UpdateGroupSelectionOverlay();
         }
 
        

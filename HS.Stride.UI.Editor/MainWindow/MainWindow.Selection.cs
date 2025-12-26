@@ -68,6 +68,7 @@ namespace HS.Stride.UI.Editor
                 {
                     // Parent is selected, so this element is NOT a root selection
                     UpdateAlignmentButtonStates();
+                    UpdateGroupSelectionOverlay();
                     return;
                 }
                 parent = parent.Parent;
@@ -79,6 +80,7 @@ namespace HS.Stride.UI.Editor
             // Remove any descendants from root selection (they now have a selected ancestor)
             RemoveDescendantsFromRootSelection(element);
             UpdateAlignmentButtonStates();
+            UpdateGroupSelectionOverlay();
         }
 
         /// <summary>
@@ -98,6 +100,7 @@ namespace HS.Stride.UI.Editor
                 PromoteDescendantsToRootIfSelected(child);
             }
             UpdateAlignmentButtonStates();
+            UpdateGroupSelectionOverlay();
         }
 
         /// <summary>
@@ -206,6 +209,7 @@ namespace HS.Stride.UI.Editor
             _selectedElements.Clear();
             _selectedRootElements.Clear();
             UpdateAlignmentButtonStates();
+            UpdateGroupSelectionOverlay();
 
             // Clear TreeView selection
             _isUpdatingTreeViewSelection = true;

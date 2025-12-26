@@ -102,6 +102,10 @@ namespace HS.Stride.UI.Editor
         private bool _isMultiSelectDragActive = false;
         private Dictionary<string, (double X, double Y)> _multiSelectDragStartPositions = new();
 
+        // Group resize tracking for undo support
+        private Rect _groupResizeStartBounds;
+        private Dictionary<string, (double X, double Y, double W, double H)> _groupResizeStartStates = new();
+
         // Core Services
         private FileOperationService _fileService = new();
         private AssetService _assetService = new();
@@ -227,6 +231,12 @@ namespace HS.Stride.UI.Editor
 
             // Initialize spacing guide overlay
             SpacingGuideOverlay.SetArtboardSize(_designWidth, _designHeight);
+
+            // Wire up group selection overlay events
+            GroupSelectionOverlay.ResizeStarted += GroupSelectionOverlay_ResizeStarted;
+            GroupSelectionOverlay.Resizing += GroupSelectionOverlay_Resizing;
+            GroupSelectionOverlay.ResizeEnded += GroupSelectionOverlay_ResizeEnded;
+            GroupSelectionOverlay.GetZoomLevel = () => _zoomLevel;
 
             InitializeUILibrary();
             // Don't create root container at startup - only when document is loaded (new/open)
@@ -800,6 +810,15 @@ namespace HS.Stride.UI.Editor
                     element.Y += deltaY;
                 }
 
+                // Update group selection overlay position to follow the drag (images only)
+                bool allImages = _selectedRootElements.Count >= 2 &&
+                                 _selectedRootElements.All(el => el.ElementType == "ImageElement");
+                if (allImages)
+                {
+                    var bounds = CalculateGroupBounds(_selectedRootElements);
+                    GroupSelectionOverlay.SetBounds(bounds);
+                }
+
                 // Return true if dragged element has a selected ancestor (don't move itself)
                 return hasSelectedAncestor;
             }
@@ -817,6 +836,186 @@ namespace HS.Stride.UI.Editor
             var (snapH, snapV) = SpacingGuideOverlay.GetCenterSnapPosition(elementRect, out double snappedX, out double snappedY);
             return (snappedX, snappedY, snapH, snapV);
         }
+
+        #region Group Selection Resize
+
+        /// <summary>
+        /// Handles the start of a group resize operation
+        /// </summary>
+        private void GroupSelectionOverlay_ResizeStarted(object? sender, Controls.GroupResizeEventArgs e)
+        {
+            _groupResizeStartBounds = e.OriginalBounds;
+            _groupResizeStartStates.Clear();
+
+            foreach (var el in _selectedRootElements)
+            {
+                _groupResizeStartStates[el.Id] = (el.X, el.Y, el.Width, el.Height);
+            }
+        }
+
+        /// <summary>
+        /// Handles resizing during a group resize operation.
+        /// Scales all selected root elements proportionally around the scale origin.
+        /// </summary>
+        private void GroupSelectionOverlay_Resizing(object? sender, Controls.GroupResizeEventArgs e)
+        {
+            double scaleX = e.ScaleX;
+            double scaleY = e.ScaleY;
+            var origin = e.ScaleOrigin;
+
+            foreach (var el in _selectedRootElements)
+            {
+                if (!_groupResizeStartStates.TryGetValue(el.Id, out var start))
+                    continue;
+
+                // Get the world position of this element at the start of resize
+                var startWorldBounds = GetElementWorldBoundsFromLocal(el, start.X, start.Y);
+
+                // Scale position relative to origin (in world coordinates)
+                double relX = startWorldBounds.X - origin.X;
+                double relY = startWorldBounds.Y - origin.Y;
+                double newWorldX = origin.X + relX * scaleX;
+                double newWorldY = origin.Y + relY * scaleY;
+
+                // Convert back to local coordinates
+                var parentOffset = GetParentOffset(el);
+                el.X = newWorldX - parentOffset.X;
+                el.Y = newWorldY - parentOffset.Y;
+                el.Width = Math.Max(10, start.W * scaleX);
+                el.Height = Math.Max(10, start.H * scaleY);
+            }
+
+            // Update spacing guides during resize
+            if (_selectedRootElements.Count > 0)
+            {
+                var allElements = GetAllNonSystemElements();
+                SpacingGuideOverlay.ShowGuides(_selectedRootElements[0], allElements);
+            }
+        }
+
+        /// <summary>
+        /// Gets the cumulative offset from all parent elements
+        /// </summary>
+        private Point GetParentOffset(UIElementViewModel element)
+        {
+            double offsetX = 0, offsetY = 0;
+            var parent = element.Parent;
+            while (parent != null && !parent.IsSystemElement)
+            {
+                offsetX += parent.X;
+                offsetY += parent.Y;
+                parent = parent.Parent;
+            }
+            return new Point(offsetX, offsetY);
+        }
+
+        /// <summary>
+        /// Gets element world bounds using specified local coordinates (for resize start position)
+        /// </summary>
+        private Rect GetElementWorldBoundsFromLocal(UIElementViewModel element, double localX, double localY)
+        {
+            var offset = GetParentOffset(element);
+            return new Rect(localX + offset.X, localY + offset.Y, element.Width, element.Height);
+        }
+
+        /// <summary>
+        /// Handles the end of a group resize operation
+        /// </summary>
+        private void GroupSelectionOverlay_ResizeEnded(object? sender, Controls.GroupResizeEventArgs e)
+        {
+            // Hide spacing guides
+            SpacingGuideOverlay.HideGuides();
+
+            // Create undo command for batch resize
+            var resizes = new List<(UIElementViewModel, double, double, double, double, double, double, double, double)>();
+
+            foreach (var el in _selectedRootElements)
+            {
+                if (_groupResizeStartStates.TryGetValue(el.Id, out var start))
+                {
+                    // Only add if something actually changed
+                    if (el.X != start.X || el.Y != start.Y || el.Width != start.W || el.Height != start.H)
+                    {
+                        resizes.Add((el, start.X, start.Y, start.W, start.H, el.X, el.Y, el.Width, el.Height));
+                    }
+                }
+            }
+
+            if (resizes.Count > 0)
+            {
+                var command = new Models.Commands.BatchResizeCommand(resizes, "Resize Elements");
+                _undoRedoManager.RecordExecuted(command);
+            }
+
+            _groupResizeStartStates.Clear();
+
+            // Update property panel
+            UpdatePropertyPanel();
+
+            // Update the group overlay bounds to match final state
+            UpdateGroupSelectionOverlay();
+        }
+
+        /// <summary>
+        /// Calculates the unified bounding box for selected root elements.
+        /// Uses world coordinates to properly position the overlay.
+        /// </summary>
+        private Rect CalculateGroupBounds(List<UIElementViewModel> elements)
+        {
+            if (elements.Count == 0)
+                return Rect.Empty;
+
+            double minX = double.MaxValue, minY = double.MaxValue;
+            double maxX = double.MinValue, maxY = double.MinValue;
+
+            foreach (var el in elements)
+            {
+                // Get world bounds for proper overlay positioning
+                var worldBounds = GetElementWorldBounds(el);
+                minX = Math.Min(minX, worldBounds.X);
+                minY = Math.Min(minY, worldBounds.Y);
+                maxX = Math.Max(maxX, worldBounds.Right);
+                maxY = Math.Max(maxY, worldBounds.Bottom);
+            }
+
+            return new Rect(minX, minY, maxX - minX, maxY - minY);
+        }
+
+        /// <summary>
+        /// Updates the group selection overlay based on current selection.
+        /// Shows overlay only when 2+ ImageElements are selected.
+        /// Other element types don't scale well together (fonts, containers, etc.)
+        /// </summary>
+        private void UpdateGroupSelectionOverlay()
+        {
+            // Only show group overlay for multiple ImageElements
+            bool allImages = _selectedRootElements.Count >= 2 &&
+                             _selectedRootElements.All(el => el.ElementType == "ImageElement");
+
+            if (allImages)
+            {
+                var bounds = CalculateGroupBounds(_selectedRootElements);
+                GroupSelectionOverlay.SetBounds(bounds);
+
+                // Hide individual selection visuals
+                foreach (var element in _selectedElements)
+                {
+                    _renderService.SetElementHandlesVisible(element, false);
+                }
+            }
+            else
+            {
+                GroupSelectionOverlay.Hide();
+
+                // Restore individual handles for selected elements
+                foreach (var element in _selectedElements)
+                {
+                    _renderService.SetElementHandlesVisible(element, true);
+                }
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Check if element has an ancestor that is selected
@@ -963,6 +1162,16 @@ namespace HS.Stride.UI.Editor
         #endregion
 
         #region Snapping
+
+        private void SnapValueTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Escape)
+            {
+                // Move focus away from the TextBox
+                Keyboard.ClearFocus();
+                e.Handled = true;
+            }
+        }
 
         private double GetSnapValue()
         {

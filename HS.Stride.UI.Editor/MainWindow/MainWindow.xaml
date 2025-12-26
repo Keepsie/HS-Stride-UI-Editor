@@ -592,6 +592,7 @@
                                          Padding="6,4"
                                          FontSize="12"
                                          ToolTip="Snap grid size"
+                                         KeyDown="SnapValueTextBox_KeyDown"
                                          Margin="0,0,12,0"/>
 
                                 <!-- Separator -->
@@ -780,6 +781,9 @@
                                             <!-- Spacing Guide Overlay (shows distance lines during drag) -->
                                             <controls:SpacingGuideOverlay x:Name="SpacingGuideOverlay"
                                                                           IsHitTestVisible="False"/>
+
+                                            <!-- Group Selection Overlay (unified bounding box for multi-select) -->
+                                            <controls:GroupSelectionOverlay x:Name="GroupSelectionOverlay"/>
 
                                             <!-- Empty state text (shown when no elements) -->
                                             <TextBlock x:Name="EmptyStateText"
