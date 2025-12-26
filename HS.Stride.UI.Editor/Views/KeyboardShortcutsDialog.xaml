@@ -193,6 +193,25 @@
                     <TextBlock Grid.Column="1" Text="Zoom in/out" Style="{StaticResource DescText}"/>
                 </Grid>
 
+                <!-- Alignment Tools -->
+                <TextBlock Text="Alignment Tools" Style="{StaticResource CategoryHeader}"/>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="2+ elements" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Multi-element align" Style="{StaticResource DescText}"/>
+                </Grid>
+                <Grid Style="{StaticResource ShortcutRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="1 child element" Style="{StaticResource KeyText}"/>
+                    <TextBlock Grid.Column="1" Text="Align to parent bounds" Style="{StaticResource DescText}"/>
+                </Grid>
+
             </StackPanel>
         </ScrollViewer>
 

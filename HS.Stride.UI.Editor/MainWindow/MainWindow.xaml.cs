@@ -1113,38 +1113,60 @@ namespace HS.Stride.UI.Editor
 
         private void AlignLeft_Click(object sender, RoutedEventArgs e)
         {
-            var command = _alignmentService.AlignLeft(_selectedElements.ToList());
+            var command = IsSingleChildSelection()
+                ? _alignmentService.AlignToParentLeft(_selectedElements[0])
+                : _alignmentService.AlignLeft(_selectedElements.ToList());
             if (command != null) _undoRedoManager.Execute(command);
         }
 
         private void AlignCenterH_Click(object sender, RoutedEventArgs e)
         {
-            var command = _alignmentService.AlignCenterH(_selectedElements.ToList());
+            var command = IsSingleChildSelection()
+                ? _alignmentService.AlignToParentCenterH(_selectedElements[0])
+                : _alignmentService.AlignCenterH(_selectedElements.ToList());
             if (command != null) _undoRedoManager.Execute(command);
         }
 
         private void AlignRight_Click(object sender, RoutedEventArgs e)
         {
-            var command = _alignmentService.AlignRight(_selectedElements.ToList());
+            var command = IsSingleChildSelection()
+                ? _alignmentService.AlignToParentRight(_selectedElements[0])
+                : _alignmentService.AlignRight(_selectedElements.ToList());
             if (command != null) _undoRedoManager.Execute(command);
         }
 
         private void AlignTop_Click(object sender, RoutedEventArgs e)
         {
-            var command = _alignmentService.AlignTop(_selectedElements.ToList());
+            var command = IsSingleChildSelection()
+                ? _alignmentService.AlignToParentTop(_selectedElements[0])
+                : _alignmentService.AlignTop(_selectedElements.ToList());
             if (command != null) _undoRedoManager.Execute(command);
         }
 
         private void AlignCenterV_Click(object sender, RoutedEventArgs e)
         {
-            var command = _alignmentService.AlignCenterV(_selectedElements.ToList());
+            var command = IsSingleChildSelection()
+                ? _alignmentService.AlignToParentCenterV(_selectedElements[0])
+                : _alignmentService.AlignCenterV(_selectedElements.ToList());
             if (command != null) _undoRedoManager.Execute(command);
         }
 
         private void AlignBottom_Click(object sender, RoutedEventArgs e)
         {
-            var command = _alignmentService.AlignBottom(_selectedElements.ToList());
+            var command = IsSingleChildSelection()
+                ? _alignmentService.AlignToParentBottom(_selectedElements[0])
+                : _alignmentService.AlignBottom(_selectedElements.ToList());
             if (command != null) _undoRedoManager.Execute(command);
+        }
+
+        /// <summary>
+        /// Check if a single element with a non-system parent is selected
+        /// </summary>
+        private bool IsSingleChildSelection()
+        {
+            return _selectedElements.Count == 1 &&
+                   _selectedElements[0].Parent != null &&
+                   !_selectedElements[0].Parent.IsSystemElement;
         }
 
         private void DistributeH_Click(object sender, RoutedEventArgs e)

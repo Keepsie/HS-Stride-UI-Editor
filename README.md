@@ -81,6 +81,9 @@ If you import textures directly in Stride GameStudio:
 - **Element locking** - Lock elements so you don't accidentally move them
 - **Canvas overflow** - Allow elements outside the artboard for overlays
 - **Folder filters** - Filter Project Content by folder (state saved per-project)
+- **Smart alignment** - Context-aware alignment buttons:
+  - Select 2+ elements → align them relative to each other
+  - Select 1 child element → align it within its parent bounds
 
 ### Full Undo/Redo
 
