@@ -320,12 +320,65 @@ namespace HS.Stride.UI.Editor.Core.Services
 
             // For ContentControls (Button, ToggleButton), Content is separate from Children
             // Load Content element as a child if it exists
+            // IMPORTANT: ContentControl applies padding to content positioning
+            // See Stride's ContentControl.ArrangeOverride - content is arranged in padded area
             if (toolkitElement.Type == "Button" || toolkitElement.Type == "ToggleButton")
             {
                 var content = toolkitElement.GetContent();
                 if (content != null)
                 {
                     var contentVM = ConvertToolkitElementToViewModel(content);
+
+                    // Stride's Button default padding: (10, 5, 10, 7) - Left, Top, Right, Bottom
+                    // ToggleButton inherits from ButtonBase which has no default padding override
+                    // so it uses Control's default of 0, but Button explicitly sets padding
+                    float paddingLeft, paddingTop, paddingRight, paddingBottom;
+                    if (toolkitElement.Type == "Button")
+                    {
+                        paddingLeft = 10f;
+                        paddingTop = 5f;
+                        paddingRight = 10f;
+                        paddingBottom = 7f;
+                    }
+                    else // ToggleButton - no default padding
+                    {
+                        paddingLeft = paddingTop = paddingRight = paddingBottom = 0f;
+                    }
+
+                    // Content area is button size minus padding
+                    var contentAreaWidth = (float)vm.Width - paddingLeft - paddingRight;
+                    var contentAreaHeight = (float)vm.Height - paddingTop - paddingBottom;
+
+                    // Recalculate position within the padded content area
+                    var contentMargin = content.GetMargin();
+                    var contentWidth = content.GetWidth();
+                    var contentHeight = content.GetHeight();
+
+                    // For TextBlock content without explicit size, use measured size
+                    if (content.Type == "TextBlock" && !contentWidth.HasValue && !contentHeight.HasValue)
+                    {
+                        var text = content.GetText() ?? "";
+                        var fontSize = content.GetFontSize();
+                        var (measuredWidth, measuredHeight) = MeasureText(text, fontSize);
+                        contentWidth = (float)measuredWidth + 8f;  // TEXT_PADDING_X
+                        contentHeight = (float)measuredHeight + 4f;  // TEXT_PADDING_Y
+                    }
+
+                    var (newX, newY, newW, newH) = CalculatePositionFromAlignment(
+                        content.GetHorizontalAlignment(),
+                        content.GetVerticalAlignment(),
+                        contentMargin,
+                        contentWidth,
+                        contentHeight,
+                        contentAreaWidth,
+                        contentAreaHeight,
+                        "Grid");  // Treat content area like a Grid container
+
+                    // Add padding offset - content is positioned relative to padded area
+                    contentVM.SetPositionWithoutMarginUpdate(newX + paddingLeft, newY + paddingTop);
+                    contentVM.Width = newW;
+                    contentVM.Height = newH;
+
                     contentVM.Parent = vm;
                     vm.Children.Add(contentVM);
                 }
@@ -1217,17 +1270,69 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
 
             // Recursively convert children with sibling indices for Canvas.ZIndex
+            // For ContentControls (Button, ToggleButton), first child is Content and needs padding adjustment
             int childIndex = 0;
             ToolkitUIElement? firstChild = null;
+            bool isContentControl = vm.ElementType == "Button" || vm.ElementType == "ToggleButton";
+
             foreach (var childVM in vm.Children)
             {
-                var childElement = ConvertViewModelToToolkitElement(childVM, page, element, childIndex++);
+                ToolkitUIElement childElement;
+
+                if (isContentControl && firstChild == null)
+                {
+                    // First child of ContentControl is Content
+                    // Button content position is controlled by ALIGNMENT, not absolute position
+                    // This matches Stride's behavior where ContentControl arranges content within padded area
+                    childElement = page.CreateElement(childVM.ElementType, childVM.Name, element);
+
+                    // Set size (content can have explicit size)
+                    childElement.SetSize((float)childVM.Width, (float)childVM.Height);
+
+                    // Use the content's alignment - this controls position within button
+                    // Stride's ContentControl positions content based on alignment within padded area
+                    childElement.SetAlignment(childVM.HorizontalAlignment, childVM.VerticalAlignment);
+
+                    // Copy other properties from the child
+                    childElement.SetOpacity((float)childVM.Opacity);
+                    childElement.SetZIndex(childVM.ZIndex);
+                    if (childVM.DrawLayerNumber != 0)
+                        childElement.SetDrawLayer(childVM.DrawLayerNumber);
+                    if (childVM.ClipToBounds)
+                        childElement.SetClipToBounds(childVM.ClipToBounds);
+                    if (childVM.Visibility != "Visible")
+                        childElement.SetVisibility(false);
+                    if (!childVM.IsEnabled)
+                        childElement.SetIsEnabled(false);
+                    if (!childVM.CanBeHitByUser)
+                        childElement.SetCanBeHitByUser(false);
+                    if (childVM.BackgroundColor.A > 0)
+                    {
+                        childElement.SetBackgroundColor(
+                            childVM.BackgroundColor.R,
+                            childVM.BackgroundColor.G,
+                            childVM.BackgroundColor.B,
+                            childVM.BackgroundColor.A);
+                    }
+
+                    // Save type-specific properties for content
+                    if (childVM.ElementType == "TextBlock")
+                        SaveTextBlockProperties(childElement, childVM);
+                    else if (childVM.ElementType == "ImageElement")
+                        SaveImageElementProperties(childElement, childVM);
+                }
+                else
+                {
+                    childElement = ConvertViewModelToToolkitElement(childVM, page, element, childIndex);
+                }
+
                 if (firstChild == null)
                     firstChild = childElement;
+                childIndex++;
             }
 
-            // For ContentControls (Button, ToggleButton), set Content to first child
-            if ((vm.ElementType == "Button" || vm.ElementType == "ToggleButton") && firstChild != null)
+            // For ContentControls, set Content to first child
+            if (isContentControl && firstChild != null)
             {
                 element.SetContent(firstChild);
             }

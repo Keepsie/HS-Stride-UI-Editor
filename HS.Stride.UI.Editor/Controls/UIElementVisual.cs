@@ -815,6 +815,13 @@ namespace HS.Stride.UI.Editor.Controls
                         }
 
                         // Threshold exceeded - start the actual drag
+                        // But NOT for button content - Stride doesn't allow free positioning of button content
+                        // Content position is controlled only by alignment (Left/Center/Right, Top/Center/Bottom)
+                        if (ViewModel.IsButtonContent)
+                        {
+                            return; // Button content cannot be dragged
+                        }
+
                         _isDragStarted = true;
 
                         // Alt+drag to duplicate (Photoshop style) - trigger once when drag starts

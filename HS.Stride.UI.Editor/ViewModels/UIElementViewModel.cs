@@ -114,6 +114,17 @@ namespace HS.Stride.UI.Editor.ViewModels
         }
 
         /// <summary>
+        /// Returns true if this element is the Content of a Button or ToggleButton.
+        /// Button content cannot be freely positioned - only alignment controls its position.
+        /// This matches Stride's ContentControl behavior where content is arranged within padding.
+        /// </summary>
+        public bool IsButtonContent =>
+            Parent != null &&
+            (Parent.ElementType == "Button" || Parent.ElementType == "ToggleButton") &&
+            Parent.Children.Count > 0 &&
+            Parent.Children[0] == this;
+
+        /// <summary>
         /// When true, element can be positioned outside the canvas bounds.
         /// Useful for overlays, HUD elements that bleed to screen edges, etc.
         /// </summary>
@@ -217,6 +228,7 @@ namespace HS.Stride.UI.Editor.ViewModels
         /// <summary>
         /// Recalculates X/Y position based on alignment, margin, and parent dimensions.
         /// This matches Stride's layout behavior where alignment + margin determines position.
+        /// For button content, accounts for ContentControl padding.
         /// </summary>
         public void RecalculatePositionFromAlignment()
         {
@@ -236,20 +248,40 @@ namespace HS.Stride.UI.Editor.ViewModels
                 return;
             }
 
+            // For button content, calculate position within padded content area
+            // Then add padding offset for visual display
+            double paddingLeft = 0, paddingTop = 0, paddingRight = 0, paddingBottom = 0;
+            if (IsButtonContent)
+            {
+                if (Parent.ElementType == "Button")
+                {
+                    // Stride's Button default padding: (10, 5, 10, 7) - Left, Top, Right, Bottom
+                    paddingLeft = 10;
+                    paddingTop = 5;
+                    paddingRight = 10;
+                    paddingBottom = 7;
+                }
+                // ToggleButton has no default padding
+            }
+
+            // Content area dimensions (after padding)
+            var contentAreaWidth = parentWidth - paddingLeft - paddingRight;
+            var contentAreaHeight = parentHeight - paddingTop - paddingBottom;
+
             // For Grid and other containers, calculate position based on alignment
             double x, y;
 
-            // Horizontal position
+            // Horizontal position within content area
             switch (_horizontalAlignment)
             {
                 case "Left":
                     x = _marginLeft;
                     break;
                 case "Right":
-                    x = parentWidth - _marginRight - _width;
+                    x = contentAreaWidth - _marginRight - _width;
                     break;
                 case "Center":
-                    x = _marginLeft + (parentWidth - _width - _marginLeft - _marginRight) / 2;
+                    x = _marginLeft + (contentAreaWidth - _width - _marginLeft - _marginRight) / 2;
                     break;
                 case "Stretch":
                 default:
@@ -257,17 +289,17 @@ namespace HS.Stride.UI.Editor.ViewModels
                     break;
             }
 
-            // Vertical position
+            // Vertical position within content area
             switch (_verticalAlignment)
             {
                 case "Top":
                     y = _marginTop;
                     break;
                 case "Bottom":
-                    y = parentHeight - _marginBottom - _height;
+                    y = contentAreaHeight - _marginBottom - _height;
                     break;
                 case "Center":
-                    y = _marginTop + (parentHeight - _height - _marginTop - _marginBottom) / 2;
+                    y = _marginTop + (contentAreaHeight - _height - _marginTop - _marginBottom) / 2;
                     break;
                 case "Stretch":
                 default:
@@ -275,8 +307,9 @@ namespace HS.Stride.UI.Editor.ViewModels
                     break;
             }
 
-            _x = x;
-            _y = y;
+            // Add padding offset for button content
+            _x = x + paddingLeft;
+            _y = y + paddingTop;
             OnPropertyChanged(nameof(X));
             OnPropertyChanged(nameof(Y));
         }
