@@ -79,14 +79,14 @@
             </Border>
 
             <!-- Asset Grid -->
-            <ScrollViewer Grid.Row="2"
-                          VerticalScrollBarVisibility="Auto"
-                          Padding="24,16">
-                <ListView x:Name="AssetListView"
-                          Background="Transparent"
-                          BorderThickness="0"
-                          MouseDoubleClick="AssetListView_MouseDoubleClick"
-                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListView x:Name="AssetListView"
+                      Grid.Row="2"
+                      Background="Transparent"
+                      BorderThickness="0"
+                      Margin="24,16"
+                      MouseDoubleClick="AssetListView_MouseDoubleClick"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel/>
@@ -159,7 +159,6 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-            </ScrollViewer>
 
             <!-- Buttons -->
             <Border Grid.Row="3"

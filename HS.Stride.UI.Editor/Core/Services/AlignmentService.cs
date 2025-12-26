@@ -189,5 +189,109 @@ namespace HS.Stride.UI.Editor.Core.Services
 
             return new BatchResizeCommand(resizes, "Reset Size");
         }
+
+        // ===== Parent Alignment Methods (for single child element) =====
+
+        /// <summary>
+        /// Align element to the left edge of its parent
+        /// </summary>
+        public BatchMoveCommand? AlignToParentLeft(UIElementViewModel element)
+        {
+            if (element.Parent == null || element.Parent.IsSystemElement) return null;
+
+            var moves = new List<(UIElementViewModel, double, double, double, double)>
+            {
+                (element, element.X, element.Y, 0, element.Y)
+            };
+
+            return new BatchMoveCommand(moves, "Align to Parent Left");
+        }
+
+        /// <summary>
+        /// Align element to horizontal center of its parent
+        /// </summary>
+        public BatchMoveCommand? AlignToParentCenterH(UIElementViewModel element)
+        {
+            if (element.Parent == null || element.Parent.IsSystemElement) return null;
+
+            var parentWidth = element.Parent.Width;
+            var newX = (parentWidth - element.Width) / 2;
+
+            var moves = new List<(UIElementViewModel, double, double, double, double)>
+            {
+                (element, element.X, element.Y, newX, element.Y)
+            };
+
+            return new BatchMoveCommand(moves, "Align to Parent Center (H)");
+        }
+
+        /// <summary>
+        /// Align element to the right edge of its parent
+        /// </summary>
+        public BatchMoveCommand? AlignToParentRight(UIElementViewModel element)
+        {
+            if (element.Parent == null || element.Parent.IsSystemElement) return null;
+
+            var parentWidth = element.Parent.Width;
+            var newX = parentWidth - element.Width;
+
+            var moves = new List<(UIElementViewModel, double, double, double, double)>
+            {
+                (element, element.X, element.Y, newX, element.Y)
+            };
+
+            return new BatchMoveCommand(moves, "Align to Parent Right");
+        }
+
+        /// <summary>
+        /// Align element to the top edge of its parent
+        /// </summary>
+        public BatchMoveCommand? AlignToParentTop(UIElementViewModel element)
+        {
+            if (element.Parent == null || element.Parent.IsSystemElement) return null;
+
+            var moves = new List<(UIElementViewModel, double, double, double, double)>
+            {
+                (element, element.X, element.Y, element.X, 0)
+            };
+
+            return new BatchMoveCommand(moves, "Align to Parent Top");
+        }
+
+        /// <summary>
+        /// Align element to vertical center of its parent
+        /// </summary>
+        public BatchMoveCommand? AlignToParentCenterV(UIElementViewModel element)
+        {
+            if (element.Parent == null || element.Parent.IsSystemElement) return null;
+
+            var parentHeight = element.Parent.Height;
+            var newY = (parentHeight - element.Height) / 2;
+
+            var moves = new List<(UIElementViewModel, double, double, double, double)>
+            {
+                (element, element.X, element.Y, element.X, newY)
+            };
+
+            return new BatchMoveCommand(moves, "Align to Parent Center (V)");
+        }
+
+        /// <summary>
+        /// Align element to the bottom edge of its parent
+        /// </summary>
+        public BatchMoveCommand? AlignToParentBottom(UIElementViewModel element)
+        {
+            if (element.Parent == null || element.Parent.IsSystemElement) return null;
+
+            var parentHeight = element.Parent.Height;
+            var newY = parentHeight - element.Height;
+
+            var moves = new List<(UIElementViewModel, double, double, double, double)>
+            {
+                (element, element.X, element.Y, element.X, newY)
+            };
+
+            return new BatchMoveCommand(moves, "Align to Parent Bottom");
+        }
     }
 }

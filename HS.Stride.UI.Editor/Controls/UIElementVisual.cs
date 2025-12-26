@@ -95,6 +95,9 @@ namespace HS.Stride.UI.Editor.Controls
         private double _elementStartWidth;
         private double _elementStartHeight;
 
+        // Force hide selection visuals when multi-selected (group overlay is shown instead)
+        private bool _forceHideSelectionVisuals = false;
+
         public UIElementViewModel ViewModel { get; }
         public event EventHandler<ElementSelectedEventArgs>? ElementSelected;
         public event EventHandler<ElementChangedEventArgs>? ElementChanged;
@@ -652,22 +655,34 @@ namespace HS.Stride.UI.Editor.Controls
         {
             if (ViewModel.IsSelected)
             {
-                _border.BorderBrush = Brushes.Blue;
-                _mainRect.StrokeThickness = 2;
-                _mainRect.Stroke = Brushes.Blue;
-
-                // When selected, show real background OR editor hint if no background
-                // Check alpha only - Colors.Transparent is #00FFFFFF but file might have #00000000
-                if (ViewModel.BackgroundColor.A == 0)
+                // When force-hidden (multi-select group overlay is showing), hide all selection visuals
+                if (_forceHideSelectionVisuals)
                 {
-                    _mainRect.Fill = GetEditorHintBrush(); // Show editor hint for empty elements
+                    _border.BorderBrush = Brushes.Transparent;
+                    _mainRect.StrokeThickness = 1;
+                    _mainRect.Stroke = Brushes.Transparent;
+                    _mainRect.Fill = _handler.GetFillBrush(ViewModel);
+                    _handleContainer.Visibility = Visibility.Collapsed;
                 }
                 else
                 {
-                    _mainRect.Fill = _handler.GetFillBrush(ViewModel); // Show actual background color
-                }
+                    _border.BorderBrush = Brushes.Blue;
+                    _mainRect.StrokeThickness = 2;
+                    _mainRect.Stroke = Brushes.Blue;
 
-                _handleContainer.Visibility = Visibility.Visible;
+                    // When selected, show real background OR editor hint if no background
+                    // Check alpha only - Colors.Transparent is #00FFFFFF but file might have #00000000
+                    if (ViewModel.BackgroundColor.A == 0)
+                    {
+                        _mainRect.Fill = GetEditorHintBrush(); // Show editor hint for empty elements
+                    }
+                    else
+                    {
+                        _mainRect.Fill = _handler.GetFillBrush(ViewModel); // Show actual background color
+                    }
+
+                    _handleContainer.Visibility = Visibility.Visible;
+                }
             }
             else
             {
@@ -680,6 +695,17 @@ namespace HS.Stride.UI.Editor.Controls
 
                 _handleContainer.Visibility = Visibility.Collapsed;
             }
+        }
+
+        /// <summary>
+        /// Sets whether the selection visuals (border + handles) should be visible.
+        /// When multiple elements are selected, individual selection visuals are hidden
+        /// and the group selection overlay shows the unified selection instead.
+        /// </summary>
+        public void SetHandlesVisible(bool visible)
+        {
+            _forceHideSelectionVisuals = !visible;
+            UpdateSelectionVisual();
         }
 
         private bool _wasAlreadySelected; // Track if element was selected before mouse down
@@ -789,6 +815,13 @@ namespace HS.Stride.UI.Editor.Controls
                         }
 
                         // Threshold exceeded - start the actual drag
+                        // But NOT for button content - Stride doesn't allow free positioning of button content
+                        // Content position is controlled only by alignment (Left/Center/Right, Top/Center/Bottom)
+                        if (ViewModel.IsButtonContent)
+                        {
+                            return; // Button content cannot be dragged
+                        }
+
                         _isDragStarted = true;
 
                         // Alt+drag to duplicate (Photoshop style) - trigger once when drag starts

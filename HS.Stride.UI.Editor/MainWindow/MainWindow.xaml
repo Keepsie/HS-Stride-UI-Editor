@@ -592,13 +592,16 @@
                                          Padding="6,4"
                                          FontSize="12"
                                          ToolTip="Snap grid size"
+                                         KeyDown="SnapValueTextBox_KeyDown"
+                                         LostFocus="SnapValueTextBox_LostFocus"
                                          Margin="0,0,12,0"/>
 
                                 <!-- Separator -->
                                 <Border Width="1" Height="20" Background="{StaticResource BorderBrush}" Margin="0,0,12,0"/>
 
                                 <!-- Alignment Tools -->
-                                    <TextBlock Text="Multi-Element Align:"
+                                    <TextBlock x:Name="AlignmentModeLabel"
+                                           Text="Align:"
                                            FontSize="12"
                                            Foreground="{StaticResource TextSecondaryBrush}"
                                            VerticalAlignment="Center"
@@ -734,6 +737,7 @@
                                 <Canvas x:Name="EditorCanvas"
                                         Background="Transparent"
                                         RenderTransformOrigin="0.5,0.5"
+                                        Focusable="True"
                                         MouseLeftButtonDown="EditorCanvas_MouseLeftButtonDown">
                                     <Canvas.RenderTransform>
                                         <ScaleTransform x:Name="CanvasScaleTransform" ScaleX="1.0" ScaleY="1.0"/>
@@ -780,6 +784,9 @@
                                             <!-- Spacing Guide Overlay (shows distance lines during drag) -->
                                             <controls:SpacingGuideOverlay x:Name="SpacingGuideOverlay"
                                                                           IsHitTestVisible="False"/>
+
+                                            <!-- Group Selection Overlay (unified bounding box for multi-select) -->
+                                            <controls:GroupSelectionOverlay x:Name="GroupSelectionOverlay"/>
 
                                             <!-- Empty state text (shown when no elements) -->
                                             <TextBlock x:Name="EmptyStateText"

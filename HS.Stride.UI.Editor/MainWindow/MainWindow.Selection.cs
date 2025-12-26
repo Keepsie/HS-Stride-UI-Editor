@@ -68,6 +68,7 @@ namespace HS.Stride.UI.Editor
                 {
                     // Parent is selected, so this element is NOT a root selection
                     UpdateAlignmentButtonStates();
+                    UpdateGroupSelectionOverlay();
                     return;
                 }
                 parent = parent.Parent;
@@ -79,6 +80,7 @@ namespace HS.Stride.UI.Editor
             // Remove any descendants from root selection (they now have a selected ancestor)
             RemoveDescendantsFromRootSelection(element);
             UpdateAlignmentButtonStates();
+            UpdateGroupSelectionOverlay();
         }
 
         /// <summary>
@@ -98,6 +100,7 @@ namespace HS.Stride.UI.Editor
                 PromoteDescendantsToRootIfSelected(child);
             }
             UpdateAlignmentButtonStates();
+            UpdateGroupSelectionOverlay();
         }
 
         /// <summary>
@@ -206,6 +209,7 @@ namespace HS.Stride.UI.Editor
             _selectedElements.Clear();
             _selectedRootElements.Clear();
             UpdateAlignmentButtonStates();
+            UpdateGroupSelectionOverlay();
 
             // Clear TreeView selection
             _isUpdatingTreeViewSelection = true;
@@ -275,14 +279,29 @@ namespace HS.Stride.UI.Editor
         {
             var count = _selectedElements.Count;
 
-            // Alignment requires 2+ elements
-            var alignEnabled = count >= 2;
+            // Alignment enabled for:
+            // - 2+ elements (multi-element alignment)
+            // - 1 element with a non-system parent (parent alignment)
+            var multiAlignEnabled = count >= 2;
+            var parentAlignEnabled = count == 1 &&
+                _selectedElements[0].Parent != null &&
+                !_selectedElements[0].Parent.IsSystemElement;
+            var alignEnabled = multiAlignEnabled || parentAlignEnabled;
+
             AlignLeftButton.IsEnabled = alignEnabled;
             AlignCenterHButton.IsEnabled = alignEnabled;
             AlignRightButton.IsEnabled = alignEnabled;
             AlignTopButton.IsEnabled = alignEnabled;
             AlignCenterVButton.IsEnabled = alignEnabled;
             AlignBottomButton.IsEnabled = alignEnabled;
+
+            // Update label to show current alignment mode
+            if (parentAlignEnabled)
+                AlignmentModeLabel.Text = "Align to Parent:";
+            else if (multiAlignEnabled)
+                AlignmentModeLabel.Text = "Multi-Element Align:";
+            else
+                AlignmentModeLabel.Text = "Align:";
 
             // Distribute requires 3+ elements
             var distributeEnabled = count >= 3;

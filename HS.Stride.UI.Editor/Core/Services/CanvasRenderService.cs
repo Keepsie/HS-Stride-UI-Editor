@@ -268,6 +268,19 @@ namespace HS.Stride.UI.Editor.Core.Services
             return _visualElements.ContainsKey(elementId);
         }
 
+        /// <summary>
+        /// Sets whether resize handles are visible for an element.
+        /// Used to hide individual handles when multiple elements are selected
+        /// (the group selection overlay shows handles instead).
+        /// </summary>
+        public void SetElementHandlesVisible(UIElementViewModel element, bool visible)
+        {
+            if (_visualElements.TryGetValue(element.Id, out var visual))
+            {
+                visual.SetHandlesVisible(visible);
+            }
+        }
+
         #endregion
 
         #region Cleanup
