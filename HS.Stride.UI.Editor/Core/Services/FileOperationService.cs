@@ -246,7 +246,8 @@ namespace HS.Stride.UI.Editor.Core.Services
             vm.ClipToBounds = toolkitElement.Get<bool?>("ClipToBounds") ?? false;
 
             // Behavior properties - use toolkit helpers
-            vm.Visibility = toolkitElement.Get<string>("Visibility") ?? "Visible"; // No string getter, only IsVisible() bool
+            // Visibility is boolean in toolkit helper API (visible / not visible).
+            vm.Visibility = toolkitElement.IsVisible() ? "Visible" : "Collapsed";
             vm.IsEnabled = toolkitElement.GetIsEnabled();
             vm.CanBeHitByUser = toolkitElement.GetCanBeHitByUser();
 
@@ -552,6 +553,39 @@ namespace HS.Stride.UI.Editor.Core.Services
             return result;
         }
 
+        /// <summary>
+        /// Normalizes toolkit ScrollMode values to the editor's property values.
+        /// Toolkit/documentation commonly use "Both" while the editor UI uses "VerticalHorizontal".
+        /// </summary>
+        private string NormalizeScrollModeFromToolkit(string? toolkitMode)
+        {
+            return toolkitMode switch
+            {
+                "Both" => "VerticalHorizontal",
+                "VerticalHorizontal" => "VerticalHorizontal",
+                "None" => "None",
+                "Horizontal" => "Horizontal",
+                "Vertical" => "Vertical",
+                _ => "Vertical"
+            };
+        }
+
+        /// <summary>
+        /// Converts editor ScrollMode values back to toolkit values for save/export.
+        /// </summary>
+        private string NormalizeScrollModeToToolkit(string? editorMode)
+        {
+            return editorMode switch
+            {
+                "VerticalHorizontal" => "Both",
+                "Both" => "Both",
+                "None" => "None",
+                "Horizontal" => "Horizontal",
+                "Vertical" => "Vertical",
+                _ => "Vertical"
+            };
+        }
+
         private void LoadTextBlockProperties(UIElementViewModel vm, ToolkitUIElement element)
         {
             vm.Text = CleanTextValue(element.GetText());
@@ -594,6 +628,8 @@ namespace HS.Stride.UI.Editor.Core.Services
             // Click mode - use toolkit helper
             vm.ClickMode = element.GetClickMode();
 
+            bool hasTextureImage = false;
+
             // NotPressedImage - check sprite sheet first, then texture
             if (element.IsSpriteFromSheet("NotPressedImage"))
             {
@@ -606,6 +642,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
             else if (element.IsSpriteFromTexture("NotPressedImage"))
             {
+                hasTextureImage = true;
                 vm.ButtonNotPressedImage = element.GetNotPressedImageTexture() ?? "";
                 vm.ButtonNotPressedFrame = 0;
             }
@@ -622,6 +659,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
             else if (element.IsSpriteFromTexture("PressedImage"))
             {
+                hasTextureImage = true;
                 vm.ButtonPressedImage = element.GetPressedImageTexture() ?? "";
                 vm.ButtonPressedFrame = 0;
             }
@@ -638,9 +676,12 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
             else if (element.IsSpriteFromTexture("MouseOverImage"))
             {
+                hasTextureImage = true;
                 vm.ButtonMouseOverImage = element.GetMouseOverImageTexture() ?? "";
                 vm.ButtonMouseOverFrame = 0;
             }
+
+            vm.ButtonImageMode = hasTextureImage ? "Texture" : "SpriteSheet";
         }
 
         private void LoadImageElementProperties(UIElementViewModel vm, ToolkitUIElement element)
@@ -689,7 +730,7 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void LoadScrollViewerProperties(UIElementViewModel vm, ToolkitUIElement element)
         {
-            vm.ScrollMode = element.GetScrollMode();
+            vm.ScrollMode = NormalizeScrollModeFromToolkit(element.GetScrollMode());
             vm.ScrollBarThickness = element.GetScrollBarThickness();
             vm.ScrollingSpeed = element.GetScrollingSpeed();
             vm.Deceleration = element.GetDeceleration();
@@ -710,6 +751,8 @@ namespace HS.Stride.UI.Editor.Core.Services
             vm.Text = CleanTextValue(element.GetText());
             vm.FontSize = element.GetFontSize(); // Uses helper - defaults to 20f
 
+            bool hasTextureImage = false;
+
             // Text color - no toolkit getter available for EditText TextColor
             var r = element.Get<byte?>("TextColor.R") ?? 240;
             var g = element.Get<byte?>("TextColor.G") ?? 240;
@@ -719,7 +762,7 @@ namespace HS.Stride.UI.Editor.Core.Services
 
             vm.MaxLength = element.GetMaxLength();
             vm.IsReadOnly = element.GetIsReadOnly();
-            vm.InputType = element.GetInputType();
+            vm.InputType = element.GetInputType() ?? "None";
             vm.MinLines = element.GetMinLines();
             vm.MaxLines = element.GetMaxLines();
             vm.CaretWidth = element.Get<float?>("CaretWidth") ?? 1.0f; // No toolkit getter
@@ -759,6 +802,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
             else if (element.IsSpriteFromTexture("ActiveImage"))
             {
+                hasTextureImage = true;
                 vm.EditTextActiveImage = element.GetTextureSource("ActiveImage") ?? "";
                 vm.EditTextActiveFrame = 0;
             }
@@ -775,6 +819,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
             else if (element.IsSpriteFromTexture("InactiveImage"))
             {
+                hasTextureImage = true;
                 vm.EditTextInactiveImage = element.GetTextureSource("InactiveImage") ?? "";
                 vm.EditTextInactiveFrame = 0;
             }
@@ -791,9 +836,12 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
             else if (element.IsSpriteFromTexture("MouseOverImage"))
             {
+                hasTextureImage = true;
                 vm.EditTextMouseOverImage = element.GetTextureSource("MouseOverImage") ?? "";
                 vm.EditTextMouseOverFrame = 0;
             }
+
+            vm.EditTextImageMode = hasTextureImage ? "Texture" : "SpriteSheet";
 
             // Font asset reference - load the actual font from the project
             var fontRef = element.GetFont();
@@ -811,6 +859,8 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void LoadSliderProperties(UIElementViewModel vm, ToolkitUIElement element)
         {
+            bool hasTextureImage = false;
+
             vm.SliderMinimum = element.GetSliderMinimum();
             vm.SliderMaximum = element.GetSliderMaximum();
             vm.SliderValue = element.GetSliderValue();
@@ -841,6 +891,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
             else if (element.IsSpriteFromTexture("TrackBackgroundImage"))
             {
+                hasTextureImage = true;
                 vm.SliderTrackBackgroundImage = element.GetTextureSource("TrackBackgroundImage") ?? "";
                 vm.SliderTrackBackgroundFrame = 0;
             }
@@ -857,6 +908,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
             else if (element.IsSpriteFromTexture("TrackForegroundImage"))
             {
+                hasTextureImage = true;
                 vm.SliderTrackForegroundImage = element.GetTextureSource("TrackForegroundImage") ?? "";
                 vm.SliderTrackForegroundFrame = 0;
             }
@@ -873,6 +925,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
             else if (element.IsSpriteFromTexture("ThumbImage"))
             {
+                hasTextureImage = true;
                 vm.SliderThumbImage = element.GetTextureSource("ThumbImage") ?? "";
                 vm.SliderThumbFrame = 0;
             }
@@ -889,6 +942,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
             else if (element.IsSpriteFromTexture("MouseOverThumbImage"))
             {
+                hasTextureImage = true;
                 vm.SliderMouseOverThumbImage = element.GetTextureSource("MouseOverThumbImage") ?? "";
                 vm.SliderMouseOverThumbFrame = 0;
             }
@@ -905,9 +959,12 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
             else if (element.IsSpriteFromTexture("TickImage"))
             {
+                hasTextureImage = true;
                 vm.SliderTickImage = element.GetTextureSource("TickImage") ?? "";
                 vm.SliderTickFrame = 0;
             }
+
+            vm.SliderImageMode = hasTextureImage ? "Texture" : "SpriteSheet";
         }
 
         private void LoadToggleButtonProperties(UIElementViewModel vm, ToolkitUIElement element)
@@ -915,6 +972,8 @@ namespace HS.Stride.UI.Editor.Core.Services
             vm.ToggleState = element.Get<string>("State") ?? "UnChecked";  // No string getter, only IsChecked() bool
             vm.IsThreeState = element.Get<bool?>("IsThreeState") ?? false; // No toolkit getter
             vm.ToggleClickMode = element.GetClickMode();
+
+            bool hasTextureImage = false;
 
             // 3-state images - use proper toolkit helpers
             // CheckedImage
@@ -929,6 +988,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
             else if (element.IsSpriteFromTexture("CheckedImage"))
             {
+                hasTextureImage = true;
                 vm.ToggleCheckedImage = element.GetTextureSource("CheckedImage") ?? "";
                 vm.ToggleCheckedFrame = 0;
             }
@@ -945,6 +1005,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
             else if (element.IsSpriteFromTexture("UncheckedImage"))
             {
+                hasTextureImage = true;
                 vm.ToggleUncheckedImage = element.GetTextureSource("UncheckedImage") ?? "";
                 vm.ToggleUncheckedFrame = 0;
             }
@@ -961,9 +1022,12 @@ namespace HS.Stride.UI.Editor.Core.Services
             }
             else if (element.IsSpriteFromTexture("IndeterminateImage"))
             {
+                hasTextureImage = true;
                 vm.ToggleIndeterminateImage = element.GetTextureSource("IndeterminateImage") ?? "";
                 vm.ToggleIndeterminateFrame = 0;
             }
+
+            vm.ToggleImageMode = hasTextureImage ? "Texture" : "SpriteSheet";
         }
 
         private void LoadModalElementProperties(UIElementViewModel vm, ToolkitUIElement element)
@@ -1197,28 +1261,21 @@ namespace HS.Stride.UI.Editor.Core.Services
             element.SetZIndex(vm.ZIndex);
 
             // Appearance properties - use toolkit helpers
-            if (vm.DrawLayerNumber != 0)
-                element.SetDrawLayer(vm.DrawLayerNumber);
-            if (vm.ClipToBounds)
-                element.SetClipToBounds(vm.ClipToBounds);
+            element.SetDrawLayer(vm.DrawLayerNumber);
+            element.SetClipToBounds(vm.ClipToBounds);
 
-            // Behavior properties - use toolkit helpers
-            if (vm.Visibility != "Visible")
-                element.SetVisibility(false);
-            if (!vm.IsEnabled)
-                element.SetIsEnabled(false);
-            if (!vm.CanBeHitByUser)
-                element.SetCanBeHitByUser(false);
+            // Behavior properties - set explicitly to avoid toolkit default ambiguity
+            // Note: Toolkit visibility helper is boolean, so we preserve visible vs not-visible.
+            element.SetVisibility(vm.Visibility == "Visible");
+            element.SetIsEnabled(vm.IsEnabled);
+            element.SetCanBeHitByUser(vm.CanBeHitByUser);
 
             // Background color using helper
-            if (vm.BackgroundColor.A > 0)
-            {
-                element.SetBackgroundColor(
-                    vm.BackgroundColor.R,
-                    vm.BackgroundColor.G,
-                    vm.BackgroundColor.B,
-                    vm.BackgroundColor.A);
-            }
+            element.SetBackgroundColor(
+                vm.BackgroundColor.R,
+                vm.BackgroundColor.G,
+                vm.BackgroundColor.B,
+                vm.BackgroundColor.A);
 
             // Type-specific properties
             switch (vm.ElementType)
@@ -1296,24 +1353,16 @@ namespace HS.Stride.UI.Editor.Core.Services
                     // Copy other properties from the child
                     childElement.SetOpacity((float)childVM.Opacity);
                     childElement.SetZIndex(childVM.ZIndex);
-                    if (childVM.DrawLayerNumber != 0)
-                        childElement.SetDrawLayer(childVM.DrawLayerNumber);
-                    if (childVM.ClipToBounds)
-                        childElement.SetClipToBounds(childVM.ClipToBounds);
-                    if (childVM.Visibility != "Visible")
-                        childElement.SetVisibility(false);
-                    if (!childVM.IsEnabled)
-                        childElement.SetIsEnabled(false);
-                    if (!childVM.CanBeHitByUser)
-                        childElement.SetCanBeHitByUser(false);
-                    if (childVM.BackgroundColor.A > 0)
-                    {
-                        childElement.SetBackgroundColor(
-                            childVM.BackgroundColor.R,
-                            childVM.BackgroundColor.G,
-                            childVM.BackgroundColor.B,
-                            childVM.BackgroundColor.A);
-                    }
+                    childElement.SetDrawLayer(childVM.DrawLayerNumber);
+                    childElement.SetClipToBounds(childVM.ClipToBounds);
+                    childElement.SetVisibility(childVM.Visibility == "Visible");
+                    childElement.SetIsEnabled(childVM.IsEnabled);
+                    childElement.SetCanBeHitByUser(childVM.CanBeHitByUser);
+                    childElement.SetBackgroundColor(
+                        childVM.BackgroundColor.R,
+                        childVM.BackgroundColor.G,
+                        childVM.BackgroundColor.B,
+                        childVM.BackgroundColor.A);
 
                     // Save type-specific properties for content
                     if (childVM.ElementType == "TextBlock")
@@ -1346,17 +1395,13 @@ namespace HS.Stride.UI.Editor.Core.Services
             element.SetFontSize((float)vm.FontSize);
             element.Set("TextAlignment", vm.TextAlignment); // No toolkit helper
             element.SetWrapText(vm.WrapText);
-            if (vm.DoNotSnapText)
-                element.SetDoNotSnapText(true);
+            element.SetDoNotSnapText(vm.DoNotSnapText);
 
             // Use helper method
             element.SetTextColor(vm.TextColor.R, vm.TextColor.G, vm.TextColor.B, vm.TextColor.A);
 
-            if (vm.TextOutlineThickness > 0)
-            {
-                element.SetOutlineColor(vm.TextOutlineColor.R, vm.TextOutlineColor.G, vm.TextOutlineColor.B, vm.TextOutlineColor.A);
-                element.SetOutlineThickness((float)vm.TextOutlineThickness);
-            }
+            element.SetOutlineColor(vm.TextOutlineColor.R, vm.TextOutlineColor.G, vm.TextOutlineColor.B, vm.TextOutlineColor.A);
+            element.SetOutlineThickness((float)vm.TextOutlineThickness);
 
             // Font asset reference (format: "guid:path")
             if (!string.IsNullOrEmpty(vm.FontAssetReference))
@@ -1388,8 +1433,7 @@ namespace HS.Stride.UI.Editor.Core.Services
         private void SaveButtonProperties(ToolkitUIElement element, UIElementViewModel vm, UIPage page)
         {
             // Click mode
-            if (vm.ClickMode != "Release")
-                element.SetClickMode(vm.ClickMode);
+            element.SetClickMode(vm.ClickMode);
 
             // 3-state images using helpers (v1.6.0+)
             // If AssetReference is null but string has value, look it up from project
@@ -1465,29 +1509,18 @@ namespace HS.Stride.UI.Editor.Core.Services
         private void SaveStackPanelProperties(ToolkitUIElement element, UIElementViewModel vm)
         {
             element.SetOrientation(vm.StackPanelOrientation);
-            if (vm.ItemVirtualizationEnabled)
-                element.Set("ItemVirtualizationEnabled", true); // No toolkit helper
+            element.Set("ItemVirtualizationEnabled", vm.ItemVirtualizationEnabled); // No toolkit helper
         }
 
         private void SaveScrollViewerProperties(ToolkitUIElement element, UIElementViewModel vm)
         {
-            // ScrollMode - Stride default is Horizontal
-            if (vm.ScrollMode != "Horizontal")
-                element.SetScrollMode(vm.ScrollMode);
-
-            // ScrollBar properties - use toolkit helpers
-            if (Math.Abs(vm.ScrollBarThickness - 6.0) > 0.1)
-                element.SetScrollBarThickness((float)vm.ScrollBarThickness);
-            if (Math.Abs(vm.ScrollingSpeed - 800.0) > 1.0)
-                element.SetScrollingSpeed((float)vm.ScrollingSpeed);
-            if (Math.Abs(vm.Deceleration - 1500.0) > 1.0)
-                element.SetDeceleration((float)vm.Deceleration);
-            if (Math.Abs(vm.ScrollStartThreshold - 10.0) > 0.1)
-                element.SetScrollStartThreshold((float)vm.ScrollStartThreshold);
-            if (!vm.TouchScrollingEnabled)
-                element.SetTouchScrollingEnabled(false);
-            if (vm.SnapToAnchors)  // Default is false
-                element.SetSnapToAnchors(true);
+            element.SetScrollMode(NormalizeScrollModeToToolkit(vm.ScrollMode));
+            element.SetScrollBarThickness((float)vm.ScrollBarThickness);
+            element.SetScrollingSpeed((float)vm.ScrollingSpeed);
+            element.SetDeceleration((float)vm.Deceleration);
+            element.SetScrollStartThreshold((float)vm.ScrollStartThreshold);
+            element.SetTouchScrollingEnabled(vm.TouchScrollingEnabled);
+            element.SetSnapToAnchors(vm.SnapToAnchors);
 
             // ScrollBarColor - use toolkit helper
             element.SetScrollBarColor(vm.ScrollBarColor.R, vm.ScrollBarColor.G, vm.ScrollBarColor.B, vm.ScrollBarColor.A);
@@ -1512,16 +1545,11 @@ namespace HS.Stride.UI.Editor.Core.Services
             element.SetIsReadOnly(vm.IsReadOnly);
 
             // EditText properties - use toolkit helpers
-            if (vm.InputType != "None")
-                element.SetInputType(vm.InputType);
-            if (vm.MinLines > 1)
-                element.SetMinLines(vm.MinLines);
-            if (vm.MaxLines < int.MaxValue)
-                element.SetMaxLines(vm.MaxLines);
-            if (Math.Abs(vm.CaretWidth - 1.0) > 0.01)
-                element.Set("CaretWidth", (float)vm.CaretWidth); // No toolkit helper
-            if (Math.Abs(vm.CaretFrequency - 1.0) > 0.01)
-                element.SetCaretFrequency((float)vm.CaretFrequency);
+            element.SetInputType(vm.InputType);
+            element.SetMinLines(vm.MinLines);
+            element.SetMaxLines(vm.MaxLines);
+            element.Set("CaretWidth", (float)vm.CaretWidth); // No toolkit helper
+            element.SetCaretFrequency((float)vm.CaretFrequency);
 
             // Colors using helper methods (v1.6.0+)
             element.SetCaretColor(vm.CaretColor.R, vm.CaretColor.G, vm.CaretColor.B, vm.CaretColor.A);
@@ -1586,31 +1614,21 @@ namespace HS.Stride.UI.Editor.Core.Services
             element.SetStep((float)vm.SliderStep);
 
             // Tick properties - use toolkit helpers where available
-            if (vm.SliderTickFrequency > 0)
-                element.Set("TickFrequency", (float)vm.SliderTickFrequency); // No toolkit helper
-            if (vm.SliderTickOffset > 0)
-                element.SetTickOffset((float)vm.SliderTickOffset);
-            if (vm.SliderOrientation != "Horizontal")
-                element.Set("Orientation", vm.SliderOrientation); // No slider-specific helper
-            if (vm.AreTicksDisplayed)
-                element.SetAreTicksDisplayed(true);
-            if (vm.ShouldSnapToTicks)
-                element.SetShouldSnapToTicks(true);
-            if (vm.IsDirectionReversed)
-                element.SetIsDirectionReversed(true);
+            element.Set("TickFrequency", (float)vm.SliderTickFrequency); // No toolkit helper
+            element.SetTickOffset((float)vm.SliderTickOffset);
+            element.Set("Orientation", vm.SliderOrientation); // No slider-specific helper
+            element.SetAreTicksDisplayed(vm.AreTicksDisplayed);
+            element.SetShouldSnapToTicks(vm.ShouldSnapToTicks);
+            element.SetIsDirectionReversed(vm.IsDirectionReversed);
 
             // Track starting offsets - use Thickness format
-            if (vm.TrackStartingOffsetLeft > 0 || vm.TrackStartingOffsetTop > 0 ||
-                vm.TrackStartingOffsetRight > 0 || vm.TrackStartingOffsetBottom > 0)
+            element.Set("TrackStartingOffsets", new Dictionary<string, object>
             {
-                element.Set("TrackStartingOffsets", new Dictionary<string, object>
-                {
-                    ["Left"] = (float)vm.TrackStartingOffsetLeft,
-                    ["Top"] = (float)vm.TrackStartingOffsetTop,
-                    ["Right"] = (float)vm.TrackStartingOffsetRight,
-                    ["Bottom"] = (float)vm.TrackStartingOffsetBottom
-                });
-            }
+                ["Left"] = (float)vm.TrackStartingOffsetLeft,
+                ["Top"] = (float)vm.TrackStartingOffsetTop,
+                ["Right"] = (float)vm.TrackStartingOffsetRight,
+                ["Bottom"] = (float)vm.TrackStartingOffsetBottom
+            });
 
             // 5 sprite images using proper helper methods (v1.6.0+)
             // If AssetReference is null but string has value, look it up from project
@@ -1681,16 +1699,9 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void SaveToggleButtonProperties(ToolkitUIElement element, UIElementViewModel vm, UIPage page)
         {
-            // State - only set if not default (UnChecked)
-            if (vm.ToggleState != "UnChecked")
-                element.Set("State", vm.ToggleState);
-
-            if (vm.IsThreeState)
-                element.Set("IsThreeState", true);
-
-            // ClickMode - inherited from ButtonBase
-            if (vm.ToggleClickMode != "Release")
-                element.SetClickMode(vm.ToggleClickMode);
+            element.Set("State", vm.ToggleState);
+            element.Set("IsThreeState", vm.IsThreeState);
+            element.SetClickMode(vm.ToggleClickMode);
 
             // 3-state images using proper helper methods (v1.6.0+)
             // If AssetReference is null but string has value, look it up from project
@@ -1721,7 +1732,7 @@ namespace HS.Stride.UI.Editor.Core.Services
             var indeterminateRef = vm.ToggleIndeterminateImageAsset as AssetReference;
             if (indeterminateRef == null && !string.IsNullOrEmpty(vm.ToggleIndeterminateImage))
                 indeterminateRef = GetAssetFromReference(vm.ToggleIndeterminateImage);
-            if (indeterminateRef != null && vm.IsThreeState)
+            if (indeterminateRef != null)
             {
                 if (useSpriteSheet)
                     element.SetIndeterminateImage(indeterminateRef, vm.ToggleIndeterminateFrame);
@@ -1732,42 +1743,24 @@ namespace HS.Stride.UI.Editor.Core.Services
 
         private void SaveModalElementProperties(ToolkitUIElement element, UIElementViewModel vm)
         {
-            if (!vm.IsModal)
-                element.SetIsModal(false);
-
-            // Overlay color - use toolkit helper
-            if (vm.OverlayColor.A > 0)
-            {
-                element.SetOverlayColor(vm.OverlayColor.R, vm.OverlayColor.G, vm.OverlayColor.B, vm.OverlayColor.A);
-            }
+            element.SetIsModal(vm.IsModal);
+            element.SetOverlayColor(vm.OverlayColor.R, vm.OverlayColor.G, vm.OverlayColor.B, vm.OverlayColor.A);
         }
 
         private void SaveUniformGridProperties(ToolkitUIElement element, UIElementViewModel vm)
         {
-            if (vm.UniformGridRows > 1)
-                element.Set("Rows", vm.UniformGridRows);
-            if (vm.UniformGridColumns > 1)
-                element.Set("Columns", vm.UniformGridColumns);
+            element.Set("Rows", vm.UniformGridRows);
+            element.Set("Columns", vm.UniformGridColumns);
         }
 
         private void SaveContentDecoratorProperties(ToolkitUIElement element, UIElementViewModel vm)
         {
-            // Border color - use toolkit helper
-            if (vm.BorderColor.A > 0)
-            {
-                element.SetBorderColor(vm.BorderColor.R, vm.BorderColor.G, vm.BorderColor.B, vm.BorderColor.A);
-            }
-
-            // Border thickness - use toolkit helper
-            if (vm.BorderThicknessLeft > 0 || vm.BorderThicknessTop > 0 ||
-                vm.BorderThicknessRight > 0 || vm.BorderThicknessBottom > 0)
-            {
-                element.SetBorderThickness(
-                    (float)vm.BorderThicknessLeft,
-                    (float)vm.BorderThicknessTop,
-                    (float)vm.BorderThicknessRight,
-                    (float)vm.BorderThicknessBottom);
-            }
+            element.SetBorderColor(vm.BorderColor.R, vm.BorderColor.G, vm.BorderColor.B, vm.BorderColor.A);
+            element.SetBorderThickness(
+                (float)vm.BorderThicknessLeft,
+                (float)vm.BorderThicknessTop,
+                (float)vm.BorderThicknessRight,
+                (float)vm.BorderThicknessBottom);
 
             // Background image using sprite/texture helpers
             // If AssetReference is null but string has value, look it up from project

@@ -140,16 +140,20 @@ namespace HS.Stride.UI.Editor
         }
 
         /// <summary>
-        /// Syncs the current selection to the hierarchy tree view
+        /// Syncs the current selection to the hierarchy tree view.
+        /// For single selection, highlights the element in the tree.
+        /// For multi-selection, highlights the first element so it scrolls into view.
         /// </summary>
         private void SyncSelectionToHierarchy()
         {
-            if (_selectedElements.Count != 1) return;
+            if (_selectedElements.Count == 0) return;
 
             // Use flag to prevent recursive events
             _isUpdatingTreeViewSelection = true;
             try
             {
+                // WPF TreeView only supports single native selection,
+                // so highlight the first (or only) selected element
                 SelectTreeViewItem(VisualTreeView, _selectedElements[0]);
             }
             finally

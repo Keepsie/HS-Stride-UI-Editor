@@ -517,6 +517,9 @@ namespace HS.Stride.UI.Editor.Controls
             _handler.UpdateSize(this, ViewModel);
 
             PositionResizeHandles();
+
+            // Re-layout children when container is resized (StackPanel, Grid, etc.)
+            LayoutChildren();
         }
 
         /// <summary>
@@ -567,9 +570,13 @@ namespace HS.Stride.UI.Editor.Controls
         {
             if (ViewModel.IsLocked)
             {
-                // Make entire visual pass-through for mouse events
-                // This allows clicking on elements underneath the locked overlay
-                this.IsHitTestVisible = false;
+                // Only disable hit-testing on this element's own interactive surfaces
+                // (background rect, border, resize handles) so the locked element can't
+                // be selected by clicking on the canvas.  ChildContainer stays hittable
+                // so children inside a locked parent can still be clicked.
+                _mainRect.IsHitTestVisible = false;
+                _border.IsHitTestVisible = false;
+                _handleContainer.IsHitTestVisible = false;
 
                 // Create lock icon if it doesn't exist
                 if (_lockIcon == null)
@@ -597,8 +604,10 @@ namespace HS.Stride.UI.Editor.Controls
             }
             else
             {
-                // Re-enable hit testing when unlocked
-                this.IsHitTestVisible = true;
+                // Re-enable hit testing on this element's interactive surfaces
+                _mainRect.IsHitTestVisible = true;
+                _border.IsHitTestVisible = true;
+                _handleContainer.IsHitTestVisible = true;
 
                 // Hide lock icon
                 if (_lockIcon != null)
