@@ -740,14 +740,10 @@ namespace HS.Stride.UI.Editor
 
         private void Visual_AltDragDuplicate(object? sender, UIElementViewModel element)
         {
-            // Alt+drag to duplicate (Photoshop style)
-            // Create a clone at the original position - the dragged element will move away
-            var duplicate = element.Clone(GenerateElementName(element.ElementType));
+            var duplicate = DeepCloneElement(element);
+            duplicate.Name = element.Name;
+            element.Name = GenerateElementName(element.ElementType);
 
-            // Keep the clone at the original position (the one being dragged will move)
-            // The clone stays where the original was
-
-            // Add to same parent
             var parent = element.Parent ?? (RootElements.Count > 0 ? RootElements[0] : null);
 
             var command = new CreateElementCommand(
@@ -756,7 +752,7 @@ namespace HS.Stride.UI.Editor
                 RootElements,
                 RenderElement,
                 RemoveElementVisual,
-                el => { }); // Don't select the clone
+                el => { });
             _undoRedoManager.Execute(command);
         }
 
@@ -810,10 +806,8 @@ namespace HS.Stride.UI.Editor
                     element.Y += deltaY;
                 }
 
-                // Update group selection overlay position to follow the drag (images only)
-                bool allImages = _selectedRootElements.Count >= 2 &&
-                                 _selectedRootElements.All(el => el.ElementType == "ImageElement");
-                if (allImages)
+                // Update group selection overlay position to follow the drag
+                if (_selectedRootElements.Count >= 2)
                 {
                     var bounds = CalculateGroupBounds(_selectedRootElements);
                     GroupSelectionOverlay.SetBounds(bounds);
@@ -983,16 +977,11 @@ namespace HS.Stride.UI.Editor
 
         /// <summary>
         /// Updates the group selection overlay based on current selection.
-        /// Shows overlay only when 2+ ImageElements are selected.
-        /// Other element types don't scale well together (fonts, containers, etc.)
+        /// Shows overlay when 2+ elements are selected for group resize/move.
         /// </summary>
         private void UpdateGroupSelectionOverlay()
         {
-            // Only show group overlay for multiple ImageElements
-            bool allImages = _selectedRootElements.Count >= 2 &&
-                             _selectedRootElements.All(el => el.ElementType == "ImageElement");
-
-            if (allImages)
+            if (_selectedRootElements.Count >= 2)
             {
                 var bounds = CalculateGroupBounds(_selectedRootElements);
                 GroupSelectionOverlay.SetBounds(bounds);

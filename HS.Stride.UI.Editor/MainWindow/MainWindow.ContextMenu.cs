@@ -27,8 +27,11 @@ namespace HS.Stride.UI.Editor
 
             if (result == MessageBoxResult.Yes)
             {
-                // Delete all selected elements
-                foreach (var element in _selectedElements.ToList())
+                // Delete root selected elements only — children are removed with their parent
+                var elementsToDelete = _selectedRootElements.Count > 0
+                    ? _selectedRootElements.ToList()
+                    : _selectedElements.ToList();
+                foreach (var element in elementsToDelete)
                 {
                     var command = new DeleteElementCommand(
                         element,
@@ -48,12 +51,18 @@ namespace HS.Stride.UI.Editor
         {
             if (_selectedElements.Count == 0) return;
 
-            // Duplicate all selected elements
+            // Duplicate selected ROOT elements only. Children of selected roots
+            // are duplicated as part of the root subtree.
             var newElements = new List<UIElementViewModel>();
-            foreach (var element in _selectedElements)
+            var elementsToDuplicate = _selectedRootElements.Count > 0
+                ? _selectedRootElements
+                : _selectedElements;
+
+            foreach (var element in elementsToDuplicate)
             {
-                // Use Clone to copy all properties - same position (visible in hierarchy)
-                var duplicate = element.Clone(GenerateElementName(element.ElementType));
+                var duplicate = DeepCloneElement(element);
+                duplicate.X += 20;
+                duplicate.Y += 20;
 
                 // Determine parent - same parent as selected, or first root
                 var parent = element.Parent ?? (RootElements.Count > 0 ? RootElements[0] : null);
@@ -69,14 +78,14 @@ namespace HS.Stride.UI.Editor
                 newElements.Add(duplicate);
             }
 
-            // Select all duplicated elements
+            // Select all duplicated elements and sync to hierarchy
             ClearSelection();
             foreach (var element in newElements)
             {
-                element.IsSelected = true;
-                _selectedElements.Add(element);
+                AddToSelection(element);
             }
             UpdatePropertyPanel();
+            SyncSelectionToHierarchy();
         }
 
         private void CreateParent_Click(object sender, RoutedEventArgs e)
@@ -139,6 +148,8 @@ namespace HS.Stride.UI.Editor
                 UpdateVisualZOrder);
 
             _undoRedoManager.Execute(command);
+            UpdatePropertyPanel();
+            SyncSelectionToHierarchy();
         }
 
         /// <summary>
@@ -165,6 +176,8 @@ namespace HS.Stride.UI.Editor
                 UpdateVisualZOrder);
 
             _undoRedoManager.Execute(command);
+            UpdatePropertyPanel();
+            SyncSelectionToHierarchy();
         }
 
         /// <summary>

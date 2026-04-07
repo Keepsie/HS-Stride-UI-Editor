@@ -147,9 +147,27 @@ namespace HS.Stride.UI.Editor
 
             // Select all intersecting elements
             bool ctrlPressed = (Keyboard.Modifiers & ModifierKeys.Control) != 0;
+
+            // Without Ctrl, marquee replaces current selection
+            if (!ctrlPressed)
+            {
+                ClearSelection();
+            }
+
             foreach (var element in elementsToSelect)
             {
-                SelectElement(element, addToSelection: true);
+                // Ctrl marquee should be additive, not toggle/remove existing selections
+                if (ctrlPressed)
+                {
+                    if (!_selectedElements.Contains(element))
+                    {
+                        AddToSelection(element);
+                    }
+                }
+                else
+                {
+                    AddToSelection(element);
+                }
             }
 
             UpdatePropertyPanel();

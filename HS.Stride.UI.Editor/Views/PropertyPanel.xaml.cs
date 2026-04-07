@@ -465,8 +465,10 @@ namespace HS.Stride.UI.Editor.Views
             {
                 if (_currentElement != null && !_isLoading)
                 {
+                    var oldValue = _currentElement.ClipToBounds;
                     _currentElement.ClipToBounds = PropClipToBounds.IsChecked == true;
                     NotifyPropertyChanged();
+                    FireImmediatePropertyChange("ClipToBounds", oldValue, _currentElement.ClipToBounds);
                 }
             };
 
@@ -475,8 +477,10 @@ namespace HS.Stride.UI.Editor.Views
             {
                 if (_currentElement != null && !_isLoading)
                 {
+                    var oldValue = _currentElement.Visibility;
                     _currentElement.Visibility = GetComboBoxValue(PropVisibility);
                     NotifyPropertyChanged();
+                    FireImmediatePropertyChange("Visibility", oldValue, _currentElement.Visibility);
                 }
             };
 
@@ -485,8 +489,10 @@ namespace HS.Stride.UI.Editor.Views
             {
                 if (_currentElement != null && !_isLoading)
                 {
+                    var oldValue = _currentElement.IsEnabled;
                     _currentElement.IsEnabled = PropIsEnabled.IsChecked == true;
                     NotifyPropertyChanged();
+                    FireImmediatePropertyChange("IsEnabled", oldValue, _currentElement.IsEnabled);
                 }
             };
 
@@ -495,8 +501,10 @@ namespace HS.Stride.UI.Editor.Views
             {
                 if (_currentElement != null && !_isLoading)
                 {
+                    var oldValue = _currentElement.CanBeHitByUser;
                     _currentElement.CanBeHitByUser = PropCanBeHitByUser.IsChecked == true;
                     NotifyPropertyChanged();
+                    FireImmediatePropertyChange("CanBeHitByUser", oldValue, _currentElement.CanBeHitByUser);
                 }
             };
 

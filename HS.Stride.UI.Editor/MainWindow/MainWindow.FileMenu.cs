@@ -125,8 +125,9 @@ namespace HS.Stride.UI.Editor
                 // Clear page-specific editor state (guides, reference image)
                 ClearPageEditorState();
 
-                // Reset element naming counters for new document
+                // Reset element naming counters and undo history for new document
                 _elementCounters.Clear();
+                _undoRedoManager.Clear();
 
                 // Create new blank UI page via file service
                 var rootElements = _fileService.CreateNewDocument(_designWidth, _designHeight);

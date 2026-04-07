@@ -12,7 +12,21 @@ namespace HS.Stride.UI.Editor
     /// </summary>
     public partial class MainWindow
     {
-        private List<UIElementViewModel> _clipboardElements = new();
+        private sealed class ClipboardEntry
+        {
+            public UIElementViewModel Snapshot { get; }
+            public string? OriginalParentId { get; }
+            public bool PreferRootParent { get; }
+
+            public ClipboardEntry(UIElementViewModel snapshot, string? originalParentId, bool preferRootParent)
+            {
+                Snapshot = snapshot;
+                OriginalParentId = originalParentId;
+                PreferRootParent = preferRootParent;
+            }
+        }
+
+        private List<ClipboardEntry> _clipboardElements = new();
 
         private void CutElement()
         {
@@ -25,7 +39,60 @@ namespace HS.Stride.UI.Editor
         private void CopyElement()
         {
             if (_selectedElements.Count == 0) return;
-            _clipboardElements = _selectedElements.ToList();
+
+            // Snapshot: deep-clone selected root elements so the clipboard
+            // is immune to later edits on the originals.
+            _clipboardElements = new List<ClipboardEntry>();
+            foreach (var el in _selectedRootElements.Count > 0 ? _selectedRootElements : _selectedElements)
+            {
+                var snapshot = DeepCloneElement(el);
+                var parent = el.Parent;
+                _clipboardElements.Add(new ClipboardEntry(
+                    snapshot,
+                    parent?.Id,
+                    parent == null || parent.IsSystemElement));
+            }
+        }
+
+        /// <summary>
+        /// Recursively deep-clones an element and all its children.
+        /// Each clone gets a fresh ID and a generated name.
+        /// </summary>
+        private UIElementViewModel DeepCloneElement(UIElementViewModel source)
+        {
+            var clone = source.Clone(GenerateElementName(source.ElementType));
+
+            foreach (var child in source.Children)
+            {
+                var childClone = DeepCloneElement(child);
+                clone.Children.Add(childClone);
+            }
+
+            return clone;
+        }
+
+        private UIElementViewModel? FindElementById(string id)
+        {
+            foreach (var root in RootElements)
+            {
+                var match = FindElementByIdRecursive(root, id);
+                if (match != null) return match;
+            }
+            return null;
+        }
+
+        private UIElementViewModel? FindElementByIdRecursive(UIElementViewModel current, string id)
+        {
+            if (current.Id == id)
+                return current;
+
+            foreach (var child in current.Children)
+            {
+                var match = FindElementByIdRecursive(child, id);
+                if (match != null) return match;
+            }
+
+            return null;
         }
 
         private void PasteElement()
@@ -33,17 +100,20 @@ namespace HS.Stride.UI.Editor
             if (_clipboardElements.Count == 0) return;
 
             var newElements = new List<UIElementViewModel>();
-            foreach (var clipboardElement in _clipboardElements)
+            foreach (var clipboardEntry in _clipboardElements)
             {
-                var pastedElement = new UIElementViewModel(GenerateElementName(clipboardElement.ElementType), clipboardElement.ElementType)
-                {
-                    X = clipboardElement.X + 20,
-                    Y = clipboardElement.Y + 20,
-                    Width = clipboardElement.Width,
-                    Height = clipboardElement.Height
-                };
+                // Deep-clone again so the same clipboard can be pasted multiple times
+                var pastedElement = DeepCloneElement(clipboardEntry.Snapshot);
+                pastedElement.X += 20;
+                pastedElement.Y += 20;
 
-                var parent = RootElements.Count > 0 ? RootElements[0] : null;
+                UIElementViewModel? parent = null;
+                if (!clipboardEntry.PreferRootParent && !string.IsNullOrEmpty(clipboardEntry.OriginalParentId))
+                {
+                    parent = FindElementById(clipboardEntry.OriginalParentId);
+                }
+
+                parent ??= RootElements.Count > 0 ? RootElements[0] : null;
                 var command = new CreateElementCommand(
                     pastedElement,
                     parent,
@@ -55,14 +125,14 @@ namespace HS.Stride.UI.Editor
                 newElements.Add(pastedElement);
             }
 
-            // Select all pasted elements
+            // Select all pasted elements and sync to hierarchy
             ClearSelection();
             foreach (var element in newElements)
             {
-                element.IsSelected = true;
-                _selectedElements.Add(element);
+                AddToSelection(element);
             }
             UpdatePropertyPanel();
+            SyncSelectionToHierarchy();
         }
 
         private void NudgeElement(double deltaX, double deltaY)

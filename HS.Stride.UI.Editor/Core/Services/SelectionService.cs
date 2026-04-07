@@ -29,9 +29,8 @@ namespace HS.Stride.UI.Editor.Core.Services
                     element.IsSelected = false;
                     _selectedElements.Remove(element);
                 }
-                else
+                else if (!_selectedElements.Contains(element))
                 {
-                    // Add to selection
                     element.IsSelected = true;
                     _selectedElements.Add(element);
                 }
