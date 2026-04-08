@@ -11,11 +11,11 @@ namespace HS.Stride.UI.Editor.Core.Services
 {
     /// <summary>
     /// Debug data dumping service for troubleshooting element data on load/save.
-    /// Set DEBUG_DUMP_DATA to true to enable JSON dumps to desktop.
+    /// Set IsDebugDumpEnabled to true to enable JSON dumps to desktop.
     /// </summary>
     public class DebugService
     {
-        private const bool DEBUG_DUMP_DATA = false;
+        private static readonly bool IsDebugDumpEnabled = false;
         private static readonly string DEBUG_OUTPUT_PATH = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
             "UIEditorDebug");
@@ -26,7 +26,7 @@ namespace HS.Stride.UI.Editor.Core.Services
         public void DumpData(string operation, IEnumerable<UIElementViewModel> rootElements,
             double designWidth, double designHeight, string? sourceFile = null)
         {
-            if (!DEBUG_DUMP_DATA) return;
+            if (!IsDebugDumpEnabled) return;
 
             try
             {
@@ -68,7 +68,7 @@ namespace HS.Stride.UI.Editor.Core.Services
         /// </summary>
         public void DumpToolkitData(UIPage uiPage, string sourceFile)
         {
-            if (!DEBUG_DUMP_DATA) return;
+            if (!IsDebugDumpEnabled) return;
 
             try
             {

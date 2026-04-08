@@ -1209,7 +1209,7 @@ namespace HS.Stride.UI.Editor.Views
             }
         }
 
-        public void LoadElement(UIElementViewModel element)
+        public void LoadElement(UIElementViewModel? element)
         {
             _currentElement = element;
 

@@ -79,8 +79,8 @@
                     <Separator/>
                     <MenuItem Header="_New UI Page" x:Name="MenuNewUIPage" Click="MenuNewUIPage_Click" IsEnabled="False"/>
                     <MenuItem Header="_Open..." x:Name="MenuOpen" Click="MenuOpen_Click" IsEnabled="False"/>
-                    <MenuItem Header="_Save" x:Name="MenuSave" Click="MenuSave_Click" IsEnabled="False"/>
-                    <MenuItem Header="Save _As..." x:Name="MenuSaveAs" Click="MenuSaveAs_Click" IsEnabled="False"/>
+                    <MenuItem Header="_Save" x:Name="MenuSave" Click="MenuSave_Click" IsEnabled="False" InputGestureText="Ctrl+S"/>
+                    <MenuItem Header="Save _As..." x:Name="MenuSaveAs" Click="MenuSaveAs_Click" IsEnabled="False" InputGestureText="Ctrl+Shift+S"/>
                     <MenuItem Header="_Unload Page" x:Name="MenuUnloadPage" Click="MenuUnloadPage_Click" IsEnabled="False"/>
                     <Separator/>
                     <MenuItem Header="_Import">

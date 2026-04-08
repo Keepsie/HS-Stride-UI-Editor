@@ -76,7 +76,6 @@ namespace HS.Stride.UI.Editor
 
         // Guides
         private List<Controls.Guide> _guides = new();
-        private Canvas? _guidesCanvas;
 
         // Undo/Redo
         private UndoRedoManager _undoRedoManager = new();
@@ -1111,9 +1110,9 @@ namespace HS.Stride.UI.Editor
             {
                 PropertiesPanel.LoadElement(null);
             }
-            else if (_selectedElements.Count == 1)
+            else if (_selectedElements.Count == 1 && PrimarySelection != null)
             {
-                PropertiesPanel.LoadElement(_selectedElements[0]);
+                PropertiesPanel.LoadElement(PrimarySelection);
             }
             else
             {
@@ -1161,48 +1160,54 @@ namespace HS.Stride.UI.Editor
 
         private void AlignLeft_Click(object sender, RoutedEventArgs e)
         {
-            var command = IsSingleChildSelection()
-                ? _alignmentService.AlignToParentLeft(_selectedElements[0])
+            var singleSelection = GetSingleSelectionIfAny();
+            var command = IsSingleChildSelection(singleSelection)
+                ? _alignmentService.AlignToParentLeft(singleSelection!)
                 : _alignmentService.AlignLeft(_selectedElements.ToList());
             if (command != null) _undoRedoManager.Execute(command);
         }
 
         private void AlignCenterH_Click(object sender, RoutedEventArgs e)
         {
-            var command = IsSingleChildSelection()
-                ? _alignmentService.AlignToParentCenterH(_selectedElements[0])
+            var singleSelection = GetSingleSelectionIfAny();
+            var command = IsSingleChildSelection(singleSelection)
+                ? _alignmentService.AlignToParentCenterH(singleSelection!)
                 : _alignmentService.AlignCenterH(_selectedElements.ToList());
             if (command != null) _undoRedoManager.Execute(command);
         }
 
         private void AlignRight_Click(object sender, RoutedEventArgs e)
         {
-            var command = IsSingleChildSelection()
-                ? _alignmentService.AlignToParentRight(_selectedElements[0])
+            var singleSelection = GetSingleSelectionIfAny();
+            var command = IsSingleChildSelection(singleSelection)
+                ? _alignmentService.AlignToParentRight(singleSelection!)
                 : _alignmentService.AlignRight(_selectedElements.ToList());
             if (command != null) _undoRedoManager.Execute(command);
         }
 
         private void AlignTop_Click(object sender, RoutedEventArgs e)
         {
-            var command = IsSingleChildSelection()
-                ? _alignmentService.AlignToParentTop(_selectedElements[0])
+            var singleSelection = GetSingleSelectionIfAny();
+            var command = IsSingleChildSelection(singleSelection)
+                ? _alignmentService.AlignToParentTop(singleSelection!)
                 : _alignmentService.AlignTop(_selectedElements.ToList());
             if (command != null) _undoRedoManager.Execute(command);
         }
 
         private void AlignCenterV_Click(object sender, RoutedEventArgs e)
         {
-            var command = IsSingleChildSelection()
-                ? _alignmentService.AlignToParentCenterV(_selectedElements[0])
+            var singleSelection = GetSingleSelectionIfAny();
+            var command = IsSingleChildSelection(singleSelection)
+                ? _alignmentService.AlignToParentCenterV(singleSelection!)
                 : _alignmentService.AlignCenterV(_selectedElements.ToList());
             if (command != null) _undoRedoManager.Execute(command);
         }
 
         private void AlignBottom_Click(object sender, RoutedEventArgs e)
         {
-            var command = IsSingleChildSelection()
-                ? _alignmentService.AlignToParentBottom(_selectedElements[0])
+            var singleSelection = GetSingleSelectionIfAny();
+            var command = IsSingleChildSelection(singleSelection)
+                ? _alignmentService.AlignToParentBottom(singleSelection!)
                 : _alignmentService.AlignBottom(_selectedElements.ToList());
             if (command != null) _undoRedoManager.Execute(command);
         }
@@ -1210,11 +1215,14 @@ namespace HS.Stride.UI.Editor
         /// <summary>
         /// Check if a single element with a non-system parent is selected
         /// </summary>
-        private bool IsSingleChildSelection()
+        private static bool IsSingleChildSelection(UIElementViewModel? element)
         {
-            return _selectedElements.Count == 1 &&
-                   _selectedElements[0].Parent != null &&
-                   !_selectedElements[0].Parent.IsSystemElement;
+            return element?.Parent != null && !element.Parent.IsSystemElement;
+        }
+
+        private UIElementViewModel? GetSingleSelectionIfAny()
+        {
+            return _selectedElements.Count == 1 ? PrimarySelection : null;
         }
 
         private void DistributeH_Click(object sender, RoutedEventArgs e)

@@ -146,7 +146,8 @@ namespace HS.Stride.UI.Editor
         /// </summary>
         private void SyncSelectionToHierarchy()
         {
-            if (_selectedElements.Count == 0) return;
+            var primarySelection = PrimarySelection;
+            if (primarySelection == null) return;
 
             // Use flag to prevent recursive events
             _isUpdatingTreeViewSelection = true;
@@ -154,7 +155,7 @@ namespace HS.Stride.UI.Editor
             {
                 // WPF TreeView only supports single native selection,
                 // so highlight the first (or only) selected element
-                SelectTreeViewItem(VisualTreeView, _selectedElements[0]);
+                SelectTreeViewItem(VisualTreeView, primarySelection);
             }
             finally
             {
@@ -282,14 +283,14 @@ namespace HS.Stride.UI.Editor
         private void UpdateAlignmentButtonStates()
         {
             var count = _selectedElements.Count;
+            var singleSelected = count == 1 ? PrimarySelection : null;
+            var singleSelectedParent = singleSelected?.Parent;
 
             // Alignment enabled for:
             // - 2+ elements (multi-element alignment)
             // - 1 element with a non-system parent (parent alignment)
             var multiAlignEnabled = count >= 2;
-            var parentAlignEnabled = count == 1 &&
-                _selectedElements[0].Parent != null &&
-                !_selectedElements[0].Parent.IsSystemElement;
+            var parentAlignEnabled = singleSelectedParent != null && !singleSelectedParent.IsSystemElement;
             var alignEnabled = multiAlignEnabled || parentAlignEnabled;
 
             AlignLeftButton.IsEnabled = alignEnabled;
