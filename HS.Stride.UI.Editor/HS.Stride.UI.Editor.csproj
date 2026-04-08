@@ -20,12 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="HS.Stride.Editor.Toolkit" Version="1.8.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="HS.Stride.Mass.Importer.Core">
-      <HintPath>libs\HS.Stride.Mass.Importer.Core.dll</HintPath>
-    </Reference>
+    <PackageReference Include="HS.Stride.Mass.Importer.Core" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>
