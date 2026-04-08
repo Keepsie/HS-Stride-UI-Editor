@@ -139,7 +139,13 @@ namespace HS.Stride.UI.Editor
         {
             if (_selectedElements.Count == 0) return;
 
-            foreach (var element in _selectedElements)
+            // Match mouse-drag behavior: move selected ROOT elements only,
+            // so child selections don't get double-moved when a parent is also selected.
+            var elementsToMove = _selectedRootElements.Count > 0 ? _selectedRootElements : _selectedElements;
+
+            var moves = new List<(UIElementViewModel Element, double OldX, double OldY, double NewX, double NewY)>();
+
+            foreach (var element in elementsToMove)
             {
                 // Skip button content - position is controlled by alignment only
                 if (element.IsButtonContent)
@@ -161,12 +167,21 @@ namespace HS.Stride.UI.Editor
                     newY = Math.Max(0, Math.Min(newY, _designHeight - element.Height));
                 }
 
-                var command = new MoveElementCommand(
-                    element,
-                    oldX, oldY,
-                    newX, newY);
-                _undoRedoManager.Execute(command);
+                // Only include if position actually changes
+                if (newX != oldX || newY != oldY)
+                {
+                    moves.Add((element, oldX, oldY, newX, newY));
+                }
             }
+
+            if (moves.Count == 0)
+            {
+                return;
+            }
+
+            // One undo/redo entry per nudge keypress (group-aware)
+            var command = new BatchMoveCommand(moves, "Move Elements");
+            _undoRedoManager.Execute(command);
 
             UpdatePropertyPanel();
             UpdateGroupSelectionOverlay();
