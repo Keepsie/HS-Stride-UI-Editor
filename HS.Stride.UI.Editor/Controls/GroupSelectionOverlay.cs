@@ -38,8 +38,8 @@ namespace HS.Stride.UI.Editor.Controls
     /// </summary>
     public class GroupSelectionOverlay : Canvas
     {
-        private Rectangle _border;
-        private Rectangle[] _resizeHandles;
+        private Rectangle _border = null!;
+        private Rectangle[] _resizeHandles = null!;
         private Rect _currentBounds;
         private Rect _resizeStartBounds;
         private bool _isResizing;

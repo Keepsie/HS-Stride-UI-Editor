@@ -77,11 +77,11 @@ namespace HS.Stride.UI.Editor.Controls
         // Element handler for type-specific behavior
         private readonly IElementHandler _handler;
 
-        private Rectangle _mainRect;
-        private Border _border;
-        public Canvas ChildContainer { get; private set; }
-        private Canvas _handleContainer;
-        private Rectangle[] _resizeHandles;
+        private Rectangle _mainRect = null!;
+        private Border _border = null!;
+        public Canvas ChildContainer { get; private set; } = null!;
+        private Canvas _handleContainer = null!;
+        private Rectangle[] _resizeHandles = null!;
 
         // Lock indicator visual
         private System.Windows.Shapes.Path? _lockIcon;

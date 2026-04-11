@@ -79,8 +79,8 @@
                     <Separator/>
                     <MenuItem Header="_New UI Page" x:Name="MenuNewUIPage" Click="MenuNewUIPage_Click" IsEnabled="False"/>
                     <MenuItem Header="_Open..." x:Name="MenuOpen" Click="MenuOpen_Click" IsEnabled="False"/>
-                    <MenuItem Header="_Save" x:Name="MenuSave" Click="MenuSave_Click" IsEnabled="False"/>
-                    <MenuItem Header="Save _As..." x:Name="MenuSaveAs" Click="MenuSaveAs_Click" IsEnabled="False"/>
+                    <MenuItem Header="_Save" x:Name="MenuSave" Click="MenuSave_Click" IsEnabled="False" InputGestureText="Ctrl+S"/>
+                    <MenuItem Header="Save _As..." x:Name="MenuSaveAs" Click="MenuSaveAs_Click" IsEnabled="False" InputGestureText="Ctrl+Shift+S"/>
                     <MenuItem Header="_Unload Page" x:Name="MenuUnloadPage" Click="MenuUnloadPage_Click" IsEnabled="False"/>
                     <Separator/>
                     <MenuItem Header="_Import">
@@ -218,15 +218,40 @@
                                        VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <TextBlock DockPanel.Dock="Top"
-                                   Text="HIERARCHY"
-                                   FontSize="11"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   Margin="0,0,0,12"/>
+                        <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       Text="HIERARCHY"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center"/>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <Button Content="All+"
+                                        Style="{StaticResource ModernButton}"
+                                        Padding="6,2"
+                                        FontSize="10"
+                                        Margin="0,0,4,0"
+                                        ToolTip="Open all hierarchy items"
+                                        Click="ExpandAllHierarchy_Click"/>
+                                <Button Content="All-"
+                                        Style="{StaticResource ModernButton}"
+                                        Padding="6,2"
+                                        FontSize="10"
+                                        ToolTip="Collapse all hierarchy items"
+                                        Click="CollapseAllHierarchy_Click"/>
+                            </StackPanel>
+                        </Grid>
 
                         <Grid>
-                            <ScrollViewer x:Name="HierarchyScrollViewer" VerticalScrollBarVisibility="Auto">
+                            <ScrollViewer x:Name="HierarchyScrollViewer"
+                                          VerticalScrollBarVisibility="Auto"
+                                          PreviewMouseWheel="HierarchyScrollViewer_PreviewMouseWheel">
                                 <TreeView x:Name="VisualTreeView"
                                           Background="Transparent"
                                           BorderThickness="0"

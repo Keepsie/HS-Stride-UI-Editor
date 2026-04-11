@@ -3,7 +3,10 @@
 
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Media3D;
 
 namespace HS.Stride.UI.Editor
 {
@@ -12,10 +15,45 @@ namespace HS.Stride.UI.Editor
     /// </summary>
     public partial class MainWindow
     {
+        private static DependencyObject? GetParentObject(DependencyObject source)
+        {
+            if (source is Visual || source is Visual3D)
+                return VisualTreeHelper.GetParent(source);
+
+            return LogicalTreeHelper.GetParent(source);
+        }
+
+        private static bool IsTypeOrAncestor<T>(DependencyObject? source) where T : DependencyObject
+        {
+            while (source != null)
+            {
+                if (source is T)
+                    return true;
+
+                source = GetParentObject(source);
+            }
+
+            return false;
+        }
+
         private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            // Check if we're editing text (don't intercept)
-            if (e.OriginalSource is TextBox) return;
+            var source = e.OriginalSource as DependencyObject;
+
+            // If focus is in text-editing controls, never intercept global shortcuts.
+            if (IsTypeOrAncestor<TextBoxBase>(source) || IsTypeOrAncestor<PasswordBox>(source))
+                return;
+
+            // Arrow keys should navigate UI controls (hierarchy/content/property selectors),
+            // not move elements while those controls are focused.
+            bool isArrowKey = e.Key == Key.Left || e.Key == Key.Right || e.Key == Key.Up || e.Key == Key.Down;
+            if (isArrowKey &&
+                (IsTypeOrAncestor<TreeView>(source) ||
+                 IsTypeOrAncestor<Selector>(source) ||
+                 IsTypeOrAncestor<Slider>(source)))
+            {
+                return;
+            }
 
             bool handled = true;
 
@@ -45,12 +83,26 @@ namespace HS.Stride.UI.Editor
                     PasteElement();
                     break;
 
+                case Key.Z when ctrlPressed && shiftPressed:
+                    Redo();
+                    break;
+
                 case Key.Z when ctrlPressed:
                     Undo();
                     break;
 
                 case Key.Y when ctrlPressed:
                     Redo();
+                    break;
+
+                case Key.S when ctrlPressed && shiftPressed:
+                    if (_isDocumentLoaded)
+                        MenuSaveAs_Click(this, new RoutedEventArgs());
+                    break;
+
+                case Key.S when ctrlPressed:
+                    if (_isDocumentLoaded)
+                        MenuSave_Click(this, new RoutedEventArgs());
                     break;
 
                 case Key.Left:
